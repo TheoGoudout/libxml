@@ -1,0 +1,93 @@
+cmake_minimum_required(VERSION 3.1.0 FATAL_ERROR)
+
+# Define project
+project(libxml VERSION 0.1 LANGUAGES CXX)
+
+# Set source files of the project
+set(XML_SOURCE_FILES
+    src/parser.cpp
+    src/parent-node.cpp
+    src/child-node.cpp
+    src/node.cpp
+    src/document.cpp
+    src/doctype.cpp
+    src/element.cpp
+    src/attribute.cpp
+    src/text.cpp
+)
+
+# Set header files of the project
+set(XML_HEADER_FILES
+    include/parser.h
+    include/node-interface.h
+    include/parent-node.h
+    include/child-node.h
+    include/node.h
+    include/document.h
+    include/doctype.h
+    include/element.h
+    include/attribute.h
+    include/text.h
+)
+
+
+# Set include directory of library
+include_directories(include)
+
+# Add source files to library
+add_library(xml        SHARED ${XML_SOURCE_FILES})
+add_library(xml_static STATIC ${XML_SOURCE_FILES})
+
+# Set compilation flags
+set(CMAKE_CXX_FLAGS_DEFAULT "-O2 -g")
+set(CMAKE_CXX_FLAGS_RELEASE "-O2")
+set(CMAKE_CXX_FLAGS_DEBUG  "-O0 -g")
+set(CMAKE_CXX_FLAGS "-Wall -Werror -fno-rtti" )
+
+# Set C++11 flag
+target_compile_features(xml        PRIVATE cxx_variadic_templates)
+target_compile_features(xml_static PRIVATE cxx_variadic_templates)
+
+# Set targets properties
+set_target_properties(xml PROPERTIES
+    VERSION ${libxml_VERSION}
+    SOVERSION ${libxml_VERSION}
+)
+set_target_properties(xml_static PROPERTIES
+    VERSION ${libxml_VERSION}
+)
+
+# Install library
+install(TARGETS xml xml_static
+    LIBRARY DESTINATION "${CMAKE_INSTALL_PREFIX}/lib"
+    ARCHIVE DESTINATION "${CMAKE_INSTALL_PREFIX}/lib"
+)
+
+# Install headers
+install(FILES ${XML_HEADER_FILES}
+    DESTINATION "${CMAKE_INSTALL_PREFIX}/include/xml/${libxml_VERSION}"
+)
+
+
+# Set useful environment variables
+set(XML_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/include)
+set(XML_BUILD_DIR   ${CMAKE_CURRENT_BINARY_DIR})
+set(XML_VERSION     ${libxml_VERSION})
+
+# Compile unit tests if requested
+option(UNIT_TESTS "Compile and run unit tests." OFF)
+if(UNIT_TESTS)
+    add_subdirectory(tests/ ${CMAKE_CURRENT_SOURCE_DIR}/tests/build/)
+endif()
+
+# Compile examples if requested
+option(EXAMPLES "Compile and install examples." ON)
+if(EXAMPLES)
+    add_subdirectory(examples/ ${CMAKE_CURRENT_SOURCE_DIR}/examples/build/)
+endif()
+
+# Generate doxygen documentation if requested
+option(DOCUMENTATION "Generate HTML and PDF documentation." ON)
+if(DOCUMENTATION)
+	add_subdirectory(doc/ ${CMAKE_CURRENT_SOURCE_DIR}/doc/build/)
+endif()

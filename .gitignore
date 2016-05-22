@@ -1,0 +1,4 @@
+build/
+doc/build/
+examples/build/
+tests/build/
