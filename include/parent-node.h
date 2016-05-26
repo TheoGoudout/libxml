@@ -359,6 +359,7 @@ namespace xml {
          *  \c basic_parent_node \c n times before the item pointed by the \c const_iterator.
          *
          *  \param [in] position A \c const_iterator before which \c val should be inserted \c n times.
+         *  \param [in] n        The number of time \c val should be inserted.
          *  \param [in] val      The value to be inserted. A copy of it will be made.
          *
          *  \return An \c iterator pointing to the first newly inserted element.

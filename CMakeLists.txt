@@ -5,12 +5,10 @@ project(libxml VERSION 0.1 LANGUAGES CXX)
 
 # Set source files of the project
 set(XML_SOURCE_FILES
-    src/parser.cpp
     src/parent-node.cpp
     src/child-node.cpp
     src/node.cpp
     src/document.cpp
-    src/doctype.cpp
     src/element.cpp
     src/attribute.cpp
     src/text.cpp
@@ -18,13 +16,11 @@ set(XML_SOURCE_FILES
 
 # Set header files of the project
 set(XML_HEADER_FILES
-    include/parser.h
     include/node-interface.h
     include/parent-node.h
     include/child-node.h
     include/node.h
     include/document.h
-    include/doctype.h
     include/element.h
     include/attribute.h
     include/text.h

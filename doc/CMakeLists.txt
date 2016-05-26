@@ -100,13 +100,11 @@ if(DOXYGEN_FOUND)
 
     # Set header list of input files
     set(DOXYGEN_INPUT_HEADERS
-        ${XML_INCLUDE_DIR}/parser.h
         ${XML_INCLUDE_DIR}/node-interface.h
         ${XML_INCLUDE_DIR}/parent-node.h
         ${XML_INCLUDE_DIR}/child-node.h
         ${XML_INCLUDE_DIR}/node.h
         ${XML_INCLUDE_DIR}/document.h
-        ${XML_INCLUDE_DIR}/doctype.h
         ${XML_INCLUDE_DIR}/element.h
         ${XML_INCLUDE_DIR}/attribute.h
         ${XML_INCLUDE_DIR}/text.h

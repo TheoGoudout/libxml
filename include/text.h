@@ -17,7 +17,11 @@ namespace xml {
     template <typename charT>
     class basic_text : public basic_child_node<charT> {
     public:
+        //! \name Member types
+        //!@{
         typedef std::basic_string<charT> string_type; //!< The type of string stored.
+
+        //!@}
 
         virtual std::basic_string<charT> type() const;
 
@@ -25,7 +29,7 @@ namespace xml {
         /*!
          *  \return A constant reference to text content.
          */
-        const string_type& data() const { return mData;}
+        const string_type& data() const;
 
         //! \brief Set text content.
         /*!
@@ -40,34 +44,6 @@ namespace xml {
          *  \throw xml::parsing_exception An error occured whilst parsing data.
          */
         basic_text<charT>& set_data(const string_type& data);
-
-        //! \brief Parse a string and create a \c basic_text.
-        /*!
-         *  The text content to parse must respect rules described in :
-         *  https://www.w3.org/TR/xml/#syntax
-         *  If these rules are not respected, an exception will be thrown.
-         *
-         *  \param [in] data The text content to parse.
-         *
-         *  \return A \c basic_text object representing the parsed string.
-         *
-         *  \throw xml::parsing_exception An error occured whilst parsing data.
-         */
-        static basic_text<charT> parse(const string_type& str);
-
-        //! \brief Parse a stream and create a \c basic_text.
-        /*!
-         *  The stream content to parse must respect rules described in :
-         *  https://www.w3.org/TR/xml/#syntax
-         *  If these rules are not respected, an exception will be thrown.
-         *
-         *  \param [in] sin The stream to parse.
-         *
-         *  \return A \c basic_text object representing the parsed stream.
-         *
-         *  \throw xml::parsing_exception An error occured whilst parsing data.
-         */
-        static basic_text<charT> parse(std::basic_istream<charT>& sin);
 
     private:
         string_type mData; //!< The content of a \c basic_text object.

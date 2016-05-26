@@ -5,14 +5,12 @@
 
 #include <parent-node.h>
 #include <element.h>
-#include <doctype.h>
 
 namespace xml {
     //! \brief A XML document.
     /*!
      *  This class represents a XML document. It can have a version,
-     *  encoding and a standalone status. It has a root element,
-     *  and can have a doctype element.
+     *  encoding and a standalone status. It has a mandatory root element.
      *
      *  \sa xml::basic_parent_node
      *
@@ -28,14 +26,9 @@ namespace xml {
         typedef typename parent_type::child_type              child_type;                   //!< The child node type.
         typedef typename parent_type::size_type               size_type;                    //!< The size type.
         typedef          basic_element<charT>                 root_type;                    //!< The root node type.
-        typedef          basic_doctype<charT>                 doctype_type;                 //!< The doctype node type.
         // typedef          basic_comment<charT>                 comment_type;                 //!< The comment node type.
         // typedef          basic_processing_instructions<charT> processing_instructions_type; //!< The comment node type.
         typedef          std::basic_string<charT>             string_type;                  //!< The string type.
-
-        //! The basic iterator type.
-        template <class classT, class baseT>
-        using basic_iterator = typename parent_type::template basic_iterator<classT, baseT>;
 
         //!@}
 
@@ -88,15 +81,19 @@ namespace xml {
             string_type toString() const; //!< Converts the document standalone value to a string.
         } standalone; //!< Whether this XML document is a standalone.
 
+        // TODO:
         // iterator<> insert(const_iterator<> position, const comment_type& val);
         // iterator<> insert(const_iterator<> position, comment_type&& val);
 
+        // TODO:
         // iterator<> insert(const_iterator<> position, const processing_instructions_type& val);
         // iterator<> insert(const_iterator<> position, processing_instructions_type&& val);
 
+        // TODO:
+        // Set root
+
     private:
         root_type*    mRoot;       //!< A pointer to the root element of this document.
-        doctype_type* mDoctype;    //!< A pointer to the doctype declaration of this document.
     };
 
     typedef basic_document<char>    document;  //!< A specialized \c basic_document for char.

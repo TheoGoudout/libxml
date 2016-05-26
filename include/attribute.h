@@ -5,8 +5,6 @@
 #include <istream>
 #include <sstream>
 
-#include <parser.h>
-
 namespace xml {
 
     //! \brief An XML attribute.
@@ -51,88 +49,52 @@ namespace xml {
 
         //! \brief Get the name of an attribute.
         /*!
-         *  This functions returns a const reference to the name of the
-         *  \c basic_attribute. In order to modify the name, use \c setName.
+         *  This function returns a constant reference to the name of the
+         *  \c basic_attribute.
          *
          *  \return A reference to the name of the \c basic_attribute.
          *
          *  \sa setName
          */
-        const name_type& name() const { return mName; }
+        const name_type& name() const;
 
         //! \brief Get the value of an attribute.
-        const value_type& value() const { return mValue; }
+        /*!
+         *  This function returns a constant reference to the value of the
+         *  \c basic_attribute.
+         *  The returned value is a XML formatted string.
+         *
+         *  \return A reference to the value of the \c basic_attribute.
+         *
+         *  \sa setValue
+         */
+        const value_type& value() const;
 
         //! \brief Set the name of an attribute.
-        basic_attribute<charT>& setName(const string_type& name) {
-            mName = parseName(name);
-            return *this;
-        }
+        /*!
+         *  This function sets the name of the \c basic_attribute.
+         *
+         *  \param [in] name A reference to a XML formatted string.
+         *
+         *  \return The current \c basic_attribute.
+         *
+         *  \sa name
+         */
+        basic_attribute<charT>& setName(const string_type& name);
 
         //! \brief Set the value of an attribute.
-        basic_attribute<charT>& setValue(const string_type& value) {
-            mValue = parseValue(value);
-            return *this;
-        }
+        /*!
+         *  This function sets the value of the \c basic_attribute.
+         *
+         *  \param [in] value A reference to a XML formatted string.
+         *
+         *  \return The current \c basic_attribute.
+         *
+         *  \sa value
+         */
+        basic_attribute<charT>& setValue(const string_type& value);
 
     private:
-        basic_attribute() {}
-
-        static basic_attribute<charT> parse(const string_type& str) {
-            std::basic_istringstream<charT> sin(str);
-
-            return parse(sin);
-        }
-
-
-        static basic_attribute<charT> parse(istream_type& sin) {
-            basic_parser<charT> parser(sin);
-            basic_attribute<charT> attr;
-
-            if (!parser.read_attribute_name_value(attr.mName, attr.mValue)) {
-                // TODO: error
-                throw -1;
-            }
-
-            if (!parser.read_eof()) {
-                // TODO: error
-                throw -1;
-            }
-
-            return attr;
-        }
-
-        static name_type parseName(const string_type& str) {
-            std::basic_istringstream<charT> sin(str);
-            basic_parser<charT> parser(sin);
-            name_type name;
-
-            if (!parser.read_name(name)) {
-                // TODO: error
-                throw -1;
-            }
-
-            if (!parser.read_eof()) {
-                // TODO: error
-                throw -1;
-            }
-
-            return name;
-        }
-
-        static value_type parseValue(const string_type& str) {
-            std::basic_istringstream<charT> sin(str);
-            basic_parser<charT> parser(sin);
-            value_type value;
-
-            if (parser.read_attribute_value(value)) {
-                // TODO: error
-                throw -1;
-            }
-
-            return value;
-        }
-
         name_type  mName;  //!< The name of an attribute.
         value_type mValue; //!< The value of an attribute.
     };
