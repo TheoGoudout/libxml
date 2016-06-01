@@ -3,6 +3,9 @@
 
 #include <string>
 
+#include <readable.h>
+#include <writeable.h>
+
 namespace xml {
     //! \brief An interface defining available properties for any node.
     /*!
@@ -13,7 +16,7 @@ namespace xml {
      *                By default, char and wchar_t are supported.
      */
     template <typename charT>
-    class basic_node_interface {
+    class basic_node_interface : public basic_readable<charT>, public basic_writeable<charT> {
     public:
         //! \brief Returns the type of a node.
         /*!

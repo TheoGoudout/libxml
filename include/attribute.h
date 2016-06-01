@@ -5,6 +5,9 @@
 #include <istream>
 #include <sstream>
 
+#include <readable.h>
+#include <writeable.h>
+
 namespace xml {
 
     //! \brief An XML attribute.
@@ -15,7 +18,7 @@ namespace xml {
      *                By default, char and wchar_t are supported.
      */
     template <typename charT>
-    class basic_attribute {
+    class basic_attribute : public basic_readable<charT>, public basic_writeable<charT> {
     public:
         //! \name Member types
         //!@{

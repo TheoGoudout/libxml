@@ -16,6 +16,8 @@ set(XML_SOURCE_FILES
 
 # Set header files of the project
 set(XML_HEADER_FILES
+    include/readable.h
+    include/writeable.h
     include/node-interface.h
     include/parent-node.h
     include/child-node.h
