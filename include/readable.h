@@ -26,7 +26,15 @@ namespace xml {
         :
             mInput(input),
             mCurrentState(0, 0, mInput.tellg())
-        {}
+        {
+            if (mInput.fail() || mInput.bad()) {
+                throw -1; // TODO : exception
+            } else if (mInput.eof() || mInput.good()) {
+                // Do nothing
+            } else {
+                throw -1; // TODO : assert
+            }
+        }
 
         void push()
         {
@@ -36,7 +44,7 @@ namespace xml {
         void pop()
         {
             mCurrentState = mSavedStates.top();
-            mInput.seekg(std::get<2>(mCurrentState));
+            seek(std::get<2>(mCurrentState));
             drop();
         }
 
@@ -47,26 +55,91 @@ namespace xml {
 
 
     private:
+        typedef std::streamoff line_t;
+        typedef size_t         column_t;
+        typedef std::streampos index_t;
+
+        typedef std::tuple<line_t, column_t, index_t> state_t;
+        typedef std::stack<state_t>                   state_stack_t;
+
         static istream_t empty_stream;
+
+        index_t tell()
+        {
+            index_t res = mInput.tellg();
+
+            if (mInput.fail() || mInput.bad()) {
+                throw -1; // TODO : exception
+            } else if (mInput.eof() || mInput.good()) {
+                // Do nothing
+            } else {
+                throw -1; // TODO : assert
+            }
+
+            return res;
+        }
+
+        void seek(index_t i)
+        {
+            mInput.seekg(i);
+
+            if (mInput.fail() || mInput.bad()) {
+                throw -1; // TODO : exception
+            } else if (mInput.eof() || mInput.good()) {
+                // Do nothing
+            } else {
+                throw -1; // TODO : assert
+            }
+        }
 
         char_t read()
         {
+            // Read character
             char_t res = mInput.get();
 
-            if (res == '\n') {
+            // Check for stream error
+            if (mInput.fail() || mInput.bad()) {
+                throw -1; // TODO : exception
+            } else if (mInput.eof()) {
+                return istream_t::traits_type::eof();
+            } else if (mInput.good()) {
+                // Do nothing
+            } else {
+                throw -1; // TODO : assert
+            }
+
+            // Update current state
+            if (res == '\r' && peek() == '\n') { // Handle CRLF
+                std::get<1>(mCurrentState)++;
+                return read();
+            } else if (res == '\n') {            // Update line & column indexes
                 std::get<0>(mCurrentState)++;
                 std::get<1>(mCurrentState) = 0;
-            } else {
+            } else {                             // Update column index
                 std::get<1>(mCurrentState)++;
             }
-            std::get<2>(mCurrentState) = mInput.tellg();
+
+            // Update stream index
+            std::get<2>(mCurrentState) = tell();
 
             return res;
         }
 
         char_t peek()
         {
-            return mInput.peek();
+            char_t c = mInput.peek();
+
+            if (mInput.fail() || mInput.bad()) {
+                throw -1; // TODO : exception
+            } else if (mInput.eof()) {
+                return istream_t::traits_type::eof();
+            } else if (mInput.good()) {
+                // Do nothing
+            } else {
+                throw -1; // TODO : assert
+            }
+
+            return c;
         }
 
     protected:
@@ -392,13 +465,6 @@ namespace xml {
             string_t& value);
     private:
         istream_t& mInput;
-
-        typedef std::streamoff line_t;
-        typedef size_t         column_t;
-        typedef std::streampos index_t;
-
-        typedef std::tuple<line_t, column_t, index_t> state_t;
-        typedef std::stack<state_t>                   state_stack_t;
 
         state_stack_t mSavedStates;
         state_t       mCurrentState;
