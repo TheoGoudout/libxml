@@ -7,7 +7,7 @@
 
 namespace xml {
 
-    //! \brief An XML attribute.
+    //! \brief A XML attribute.
     /*!
      *  This class represents an XML attribute that has a name and a value.
      *

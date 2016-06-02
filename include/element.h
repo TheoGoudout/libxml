@@ -6,7 +6,7 @@
 
 namespace xml {
 
-    //! \brief An XML element.
+    //! \brief A XML element.
     /*!
      *  This class represents an XML element. It can be an empty tag or it can
      *  have several children. It also has attributes.
