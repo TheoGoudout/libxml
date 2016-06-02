@@ -3,9 +3,6 @@
 
 #include <string>
 #include <istream>
-#include <fstream>
-#include <sstream>
-#include <array>
 #include <list>
 #include <tuple>
 #include <stack>
@@ -18,8 +15,6 @@ namespace xml {
         typedef charT                           char_t;
         typedef std::basic_string<charT>        string_t;
         typedef std::basic_istream<charT>       istream_t;
-        typedef std::basic_ifstream<charT>      ifstream_t;
-        typedef std::basic_istringstream<charT> istringstream_t;
         typedef std::list<string_t>             string_list_t;
 
     protected:
