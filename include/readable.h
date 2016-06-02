@@ -242,37 +242,45 @@ namespace xml {
 
         bool read_upper_letter(char_t& c)
         {
-            return match_any('A', 'Z', c);
+            return match_in('A', 'Z', c);
         }
 
         bool read_lower_letter(char_t& c)
         {
-            return match_any('a', 'z', c);
+            return match_in('a', 'z', c);
         }
 
         bool read_digit(char_t& c)
         {
-            return match_any('0', '9', c);
+            return match_in('0', '9', c);
+        }
+
+        bool read_hexa_char(char_t& c)
+        {
+            return
+                match_in('0', '9', c) ||
+                match_in('a', 'f', c) ||
+                match_in('A', 'F', c);
         }
 
         bool read_quote(char_t& c)
         {
-            return match_any({'\'', '"'}, c);
+            return match_in({'\'', '"'}, c);
         }
 
 
         bool read_char(char_t& c)
         {
             return
-                match_any({0x9, 0xA, 0xD}, c) ||
-                match_any(0x20, 0xD7FF, c) ||
-                match_any(0xE000, 0xFFFD, c) ||
-                match_any(0x10000, 0x10FFFF, c);
+                match_in({0x9, 0xA, 0xD}, c) ||
+                match_in(0x20, 0xD7FF, c) ||
+                match_in(0xE000, 0xFFFD, c) ||
+                match_in(0x10000, 0x10FFFF, c);
         }
 
         bool read_space(char_t& c)
         {
-            return match_any({0x9, 0xA, 0xD, 0x20}, c);
+            return match_in({0x9, 0xA, 0xD, 0x20}, c);
         }
 
         bool read_name_start_char(char_t& c)
@@ -282,18 +290,18 @@ namespace xml {
                 read_upper_letter(c) ||
                 match('_', c) ||
                 read_lower_letter(c) ||
-                match_any(0xC0, 0xD6, c) ||
-                match_any(0xD8, 0xF6, c) ||
-                match_any(0xF8, 0x2FF, c) ||
-                match_any(0x370, 0x37D, c) ||
-                match_any(0x37F, 0x1FFF, c) ||
-                match_any(0x200C, 0x200D, c) ||
-                match_any(0x2070, 0x218F, c) ||
-                match_any(0x2C00, 0x2FEF, c) ||
-                match_any(0x3001, 0xD7FF, c) ||
-                match_any(0xF900, 0xFDCF, c) ||
-                match_any(0xFDF0, 0xFFFD, c) ||
-                match_any(0x10000, 0xEFFFF, c);
+                match_in(0xC0, 0xD6, c) ||
+                match_in(0xD8, 0xF6, c) ||
+                match_in(0xF8, 0x2FF, c) ||
+                match_in(0x370, 0x37D, c) ||
+                match_in(0x37F, 0x1FFF, c) ||
+                match_in(0x200C, 0x200D, c) ||
+                match_in(0x2070, 0x218F, c) ||
+                match_in(0x2C00, 0x2FEF, c) ||
+                match_in(0x3001, 0xD7FF, c) ||
+                match_in(0xF900, 0xFDCF, c) ||
+                match_in(0xFDF0, 0xFFFD, c) ||
+                match_in(0x10000, 0xEFFFF, c);
         }
 
         bool read_name_char(char_t& c)
@@ -304,8 +312,8 @@ namespace xml {
                 match('.', c) ||
                 read_digit(c) ||
                 match(0xB7, c) ||
-                match_any(0x300, 0x36F, c) ||
-                match_any(0x203F, 0x2040, c);
+                match_in(0x300, 0x36F, c) ||
+                match_in(0x203F, 0x2040, c);
         }
 
         bool read_public_id_char(char_t& c)
@@ -317,7 +325,17 @@ namespace xml {
                 read_upper_letter(c) ||
                 read_lower_letter(c) ||
                 read_digit(c) ||
-                match_any("-'()+,./:=?;!*#@$_%%", c);
+                match_in("-'()+,./:=?;!*#@$_%%", c);
+        }
+
+        bool read_spaces()
+        {
+            if (!read_space())
+                return false;
+
+            while(read_space());
+
+            return true;
         }
 
         bool read_name(string_t& name)
@@ -449,20 +467,195 @@ namespace xml {
         bool read_processing_instructions_target(string_t& target);
         bool read_cdata(string_t& cdata);
 
+        bool read_reference(string_t& ref)
+        {
+            return read_entity_reference(ref) || read_char_reference(ref);
+        }
+
+        bool read_entity_reference(string_t& ref)
+        {
+            string_t name;
+            ref.clear();
+            push();
+
+            if (!match('&'))
+                goto error;
+            ref += '&';
+
+            if (!read_name(name))
+                goto error;
+            ref += name;
+
+            if (!match(';'))
+                goto error;
+            ref += ';';
+
+            drop();
+            return true;
+
+        error:
+            ref.clear();
+            pop();
+            return false;
+        }
+
+        bool read_char_reference(string_t& ref)
+        {
+            char_t c;
+            ref.clear();
+            push();
+
+            if (!match("&#"))
+                goto hexa_reference;
+            ref += "&#";
+
+            if (!read_digit(c))
+                goto hexa_reference;
+            ref += c;
+
+            while(read_digit(c))
+                ref += c;
+
+            if (!match(';'))
+                goto hexa_reference;
+            ref += ';';
+
+            drop();
+            return true;
+
+        hexa_reference:
+            pop();
+            ref.clear();
+            push();
+
+            if (!match("&#x"))
+                goto error;
+            ref += "&#x";
+
+            if (!read_hexa_char(c))
+                goto error;
+            ref += c;
+
+            while(read_hexa_char(c))
+                ref += c;
+
+            if (!match(';'))
+                goto error;
+            ref += ';';
+
+            drop();
+            return true;
+
+        error:
+            ref.clear();
+            pop();
+            return false;
+        }
+
+        bool read_parameter_entity_reference(string_t& ref)
+        {
+            string_t name;
+            ref.clear();
+            push();
+
+            if (!match('%'))
+                goto error;
+            ref += '%';
+
+            if (!read_name(name))
+                goto error;
+            ref += name;
+
+            if (!match(';'))
+                goto error;
+            ref += ';';
+
+            drop();
+            return true;
+
+        error:
+            ref.clear();
+            pop();
+            return false;
+        }
+
         bool read_entity_value(const char_t quote, string_t& entity);
-        bool read_attribute_value(const char_t quote, string_t& attribute);
+
+        bool read_attribute_value(const char_t quote, string_t& attribute)
+        {
+            char_t c;
+            string_t ref;
+            attribute.clear();
+
+            while (true) {
+                if (match_not_in({'<', '&', quote}, c))
+                    attribute += c;
+                else if (read_reference(ref))
+                    attribute += ref;
+                else
+                    break;
+            }
+
+            return true;
+        }
+
         bool read_system_literal(const char_t quote, string_t& id);
         bool read_public_id_literal(const char_t quote, string_t& id);
 
         template <typename funcT>
-        bool read_quoted(funcT func, string_t& value);
+        bool read_quoted_value(funcT func, string_t& value)
+        {
+            char_t quote;
+            value.clear();
+            push();
+
+            if(!read_quote(quote))
+                goto error;
+
+            if(!func(quote, value))
+                goto error;
+
+            if(!match(quote))
+                goto error;
+
+            drop();
+            return true;
+
+        error:
+            value.clear();
+            pop();
+            return false;
+        }
 
         template <typename funcT1, typename funcT2>
-        bool read_name_value(
-            funcT1 func1,
-            string_t& name,
-            funcT2 func2,
-            string_t& value);
+        bool read_name_and_quoted_value(funcT1 func1, string_t& name, funcT2 func2, string_t& value)
+        {
+            name.clear();
+            value.clear();
+            push();
+
+            if(!func1(name))
+                goto error;
+
+           read_spaces();
+
+            if(!match('='))
+                goto error;
+
+           read_spaces();
+
+            if(!read_quoted_value(func2, value))
+                goto error;
+
+            drop();
+            return true;
+
+        error:
+            value.clear();
+            pop();
+            return false;
+        }
+
     private:
         istream_t& mInput;
 
