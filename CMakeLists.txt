@@ -5,6 +5,8 @@ project(libxml VERSION 0.1 LANGUAGES CXX)
 
 # Set source files of the project
 set(XML_SOURCE_FILES
+    src/readable.cpp
+    src/writeable.cpp
     src/parent-node.cpp
     src/child-node.cpp
     src/node.cpp

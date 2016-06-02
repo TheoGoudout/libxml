@@ -9,6 +9,7 @@
 #include <list>
 #include <tuple>
 #include <stack>
+#include <algorithm>
 
 namespace xml {
     template <typename charT>
@@ -143,24 +144,29 @@ namespace xml {
         }
 
     protected:
-        bool match(const char_t c)
+        bool match(const char_t c, char_t& res)
         {
             if (peek() != c) {
                 return false;
             }
 
-            read();
+            res = read();
             return true;
         }
 
-        bool match(const string_t& str)
+        bool match(const string_t& str, string_t& res)
         {
+            char_t c;
+            res.clear();
             push();
 
             for(auto it = str.begin(); it != str.end(); ++it) {
-                if (!match(*it)) {
+                if (!match(*it, c)) {
                     pop();
+                    res.clear();
                     return false;
+                } else {
+                    res += c;
                 }
             }
 
@@ -168,7 +174,7 @@ namespace xml {
             return true;
         }
 
-        bool match_in(const char_t c1, const char_t c2, char_t& res = char_t())
+        bool match_in(const char_t c1, const char_t c2, char_t& res)
         {
             char_t p = peek();
             if (p < c1 || p > c2) {
@@ -179,7 +185,7 @@ namespace xml {
             return true;
         }
 
-        bool match_in(const string_t& arr, char_t& res = char_t())
+        bool match_in(const string_t& arr, char_t& res)
         {
             char_t p = peek();
             for(auto it = arr.begin(); it != arr.end(); ++it) {
@@ -203,10 +209,11 @@ namespace xml {
 
         bool match_not(const string_t& str)
         {
+            char_t c;
             push();
 
             for(auto it = str.begin(); it != str.end(); ++it) {
-                if (!match(*it)) {
+                if (!match(*it, c)) {
                     pop();
                     return true;
                 }
@@ -216,7 +223,7 @@ namespace xml {
             return false;
         }
 
-        bool match_not_in(const char_t c1, const char_t c2, char_t& res = char_t())
+        bool match_not_in(const char_t c1, const char_t c2, char_t& res)
         {
             char_t p = peek();
             if (p >= c1 && p <= c2) {
@@ -227,7 +234,7 @@ namespace xml {
             return true;
         }
 
-        bool match_not_in(const string_t& arr, char_t& res = char_t())
+        bool match_not_in(const string_t& arr, char_t& res)
         {
             char_t p = peek();
             for(auto it = arr.begin(); it != arr.end(); ++it) {
@@ -325,15 +332,38 @@ namespace xml {
                 read_upper_letter(c) ||
                 read_lower_letter(c) ||
                 read_digit(c) ||
-                match_in("-'()+,./:=?;!*#@$_%%", c);
+                match_in(
+                    {
+                        '-',
+                        '\'',
+                        '(',
+                        ')',
+                        '+',
+                        ',',
+                        '.',
+                        '/',
+                        ':',
+                        '=',
+                        '?',
+                        ';',
+                        '!',
+                        '*',
+                        '#',
+                        '@',
+                        '$',
+                        '_',
+                        '%',
+                        '"'
+                    }, c);
         }
 
         bool read_spaces()
         {
-            if (!read_space())
+            char_t c;
+            if (!read_space(c))
                 return false;
 
-            while(read_space());
+            while(read_space(c));
 
             return true;
         }
@@ -346,7 +376,7 @@ namespace xml {
 
             if (!read_name_start_char(c))
                 goto error;
-            name += c;            
+            name += c;
 
             while(read_name_char(c))
                 name += c;
@@ -362,16 +392,17 @@ namespace xml {
 
         bool read_names(string_list_t& names)
         {
+            char_t c;
             string_t name;
             names.clear();
             push();
 
             if (!read_name(name))
                 goto error;
-            names += name;
+            names.push_back(name);
 
-            while (match(0x20) && read_name(name))
-                names += name;
+            while (match(0x20, c) && read_name(name))
+                names.push_back(name);
 
             drop();
             return true;
@@ -390,7 +421,7 @@ namespace xml {
 
             if (!read_name_char(c))
                 goto error;
-            token += c;            
+            token += c;
 
             while(read_name_char(c))
                 token += c;
@@ -407,16 +438,17 @@ namespace xml {
 
         bool read_tokens(string_list_t& tokens)
         {
+            char_t c;
             string_t token;
             tokens.clear();
             push();
 
             if (!read_token(token))
                 goto error;
-            tokens += token;
+            tokens.push_back(token);
 
-            while (match(0x20) && read_token(token))
-                tokens += token;
+            while (match(0x20, c) && read_token(token))
+                tokens.push_back(token);
 
             drop();
             return true;
@@ -430,7 +462,9 @@ namespace xml {
         bool read_character_data(string_t& data)
         {
             char_t c;
-            while (match_not("]]>") && match_not_in("<&", c))
+            data.clear();
+
+            while (match_not({']', ']', '>'}) && match_not_in({'<', '&'}, c))
                 data += c;
 
             return true;
@@ -439,19 +473,20 @@ namespace xml {
         bool read_comment(string_t& comment)
         {
             char_t c;
+            string_t dummy;
             comment.clear();
             push();
 
-            if(!match("<!--"))
+            if(!match({'<', '!', '-', '-'}, dummy))
                 goto error;
 
-            while(match_not("-->") && read_char(c))
-                if (c == '-' && !match_not("-->"))
+            while(match_not({'-', '-', '>'}) && read_char(c))
+                if (c == '-' && !match_not({'-', '-', '>'}))
                     goto error;
                 else
                     comment += c;
 
-            if(!match("-->"))
+            if(!match({'-', '-', '>'}, dummy))
                 goto error;
 
             drop();
@@ -463,9 +498,63 @@ namespace xml {
             return false;
         }
 
-        bool read_processing_instructions_content(string_t& content);
-        bool read_processing_instructions_target(string_t& target);
-        bool read_cdata(string_t& cdata);
+        bool read_processing_instructions_content(string_t& content)
+        {
+            char_t c;
+            content.clear();
+
+            while (match_not({'?', '>'}) && read_char(c))
+                content += c;
+
+            return true;
+        }
+
+        bool read_processing_instructions_target(string_t& target)
+        {
+            target.clear();
+            push();
+
+            if (!read_name(target))
+                return false;
+
+            string_t xml({'x', 'm', 'l'});
+
+            // Lambda that checks if two character are the same when ignoring case.
+            auto equalsIgnoreCase =
+                [](char_t ch1, char_t ch2) {
+                    return std::toupper(ch1) == std::toupper(ch2);
+                };
+
+            // Search for the XML string in the target name.
+            const bool validTargetName = std::search(
+                target.begin(),
+                target.end(),
+                xml.begin(),
+                xml.end(),
+                equalsIgnoreCase) == target.end();
+
+            if (!validTargetName)
+                goto error;
+
+            drop();
+            return true;
+
+        error:
+            target.clear();
+            pop();
+            return false;
+        }
+
+        bool read_cdata(string_t& cdata)
+        {
+            char_t c;
+            cdata.clear();
+
+            while (match_not({']', ']', '>'}) && read_char(c))
+                cdata += c;
+
+            return true;
+        }
 
         bool read_reference(string_t& ref)
         {
@@ -474,21 +563,22 @@ namespace xml {
 
         bool read_entity_reference(string_t& ref)
         {
+            char_t c;
             string_t name;
             ref.clear();
             push();
 
-            if (!match('&'))
+            if (!match('&', c))
                 goto error;
-            ref += '&';
+            ref += c;
 
             if (!read_name(name))
                 goto error;
             ref += name;
 
-            if (!match(';'))
+            if (!match(';', c))
                 goto error;
-            ref += ';';
+            ref += c;
 
             drop();
             return true;
@@ -502,12 +592,13 @@ namespace xml {
         bool read_char_reference(string_t& ref)
         {
             char_t c;
+            string_t str;
             ref.clear();
             push();
 
-            if (!match("&#"))
+            if (!match({'&', '#'}, str))
                 goto hexa_reference;
-            ref += "&#";
+            ref += str;
 
             if (!read_digit(c))
                 goto hexa_reference;
@@ -516,9 +607,9 @@ namespace xml {
             while(read_digit(c))
                 ref += c;
 
-            if (!match(';'))
+            if (!match(';', c))
                 goto hexa_reference;
-            ref += ';';
+            ref += c;
 
             drop();
             return true;
@@ -528,9 +619,9 @@ namespace xml {
             ref.clear();
             push();
 
-            if (!match("&#x"))
+            if (!match({'&', '#', 'x'}, str))
                 goto error;
-            ref += "&#x";
+            ref += str;
 
             if (!read_hexa_char(c))
                 goto error;
@@ -539,9 +630,9 @@ namespace xml {
             while(read_hexa_char(c))
                 ref += c;
 
-            if (!match(';'))
+            if (!match(';', c))
                 goto error;
-            ref += ';';
+            ref += c;
 
             drop();
             return true;
@@ -554,21 +645,22 @@ namespace xml {
 
         bool read_parameter_entity_reference(string_t& ref)
         {
+            char_t c;
             string_t name;
             ref.clear();
             push();
 
-            if (!match('%'))
+            if (!match('%', c))
                 goto error;
-            ref += '%';
+            ref += c;
 
             if (!read_name(name))
                 goto error;
             ref += name;
 
-            if (!match(';'))
+            if (!match(';', c))
                 goto error;
-            ref += ';';
+            ref += c;
 
             drop();
             return true;
@@ -579,7 +671,25 @@ namespace xml {
             return false;
         }
 
-        bool read_entity_value(const char_t quote, string_t& entity);
+        bool read_entity_value(const char_t quote, string_t& entity)
+        {
+            char_t c;
+            string_t ref;
+            entity.clear();
+
+            while (true) {
+                if (match_not_in({'%', '&', quote}, c))
+                    entity += c;
+                else if (read_parameter_entity_reference(ref))
+                    entity += ref;
+                else if (read_reference(ref))
+                    entity += ref;
+                else
+                    break;
+            }
+
+            return true;
+        }
 
         bool read_attribute_value(const char_t quote, string_t& attribute)
         {
@@ -599,8 +709,26 @@ namespace xml {
             return true;
         }
 
-        bool read_system_literal(const char_t quote, string_t& id);
-        bool read_public_id_literal(const char_t quote, string_t& id);
+        bool read_system_literal(const char_t quote, string_t& id)
+        {
+            id.clear();
+
+            while (match_not(quote))
+                id += read();
+
+            return true;
+        }
+
+        bool read_public_id_literal(const char_t quote, string_t& id)
+        {
+            char_t c;
+            id.clear();
+
+            while (match_not(quote) && read_public_id_char(c))
+                id += c;
+
+            return true;
+        }
 
         template <typename funcT>
         bool read_quoted_value(funcT func, string_t& value)
