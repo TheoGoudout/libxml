@@ -98,6 +98,9 @@ namespace xml {
         name_type  mName;  //!< The name of an attribute.
         value_type mValue; //!< The value of an attribute.
     };
+
+    typedef basic_attribute<char>    attribute;  //!< A specialized \c basic_attribute for char.
+    typedef basic_attribute<wchar_t> wattribute; //!< A specialized \c basic_attribute for wchar_t.
 }
 
 #endif /* ATTRIBUTE_H_INCLUDED */

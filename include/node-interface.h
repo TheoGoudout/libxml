@@ -25,6 +25,9 @@ namespace xml {
          */
         virtual std::basic_string<charT> type() const = 0;
     };
+
+    typedef basic_node_interface<char>    node_interface;  //!< A specialized \c basic_node_interface for char.
+    typedef basic_node_interface<wchar_t> wnode_interface; //!< A specialized \c basic_node_interface for wchar_t.
 }
 
 #endif /* NODE_INTERFACE_H_INCLUDED */
