@@ -12,13 +12,14 @@ namespace xml {
     template <typename charT>
     class basic_readable {
     public:
-        typedef charT                           char_t;
-        typedef std::basic_string<charT>        string_t;
-        typedef std::basic_istream<charT>       istream_t;
-        typedef std::list<string_t>             string_list_t;
+        typedef charT                      char_t;
+        typedef std::basic_string<charT>   string_t;
+        typedef std::basic_istream<charT>  istream_t;
+        typedef std::list<string_t>        string_list_t;
 
-    protected:
-        basic_readable(istream_t& input = empty_stream)
+        typedef basic_readable<charT>     readable_t;
+
+        basic_readable(istream_t& input)
         :
             mInput(input),
             mCurrentState(0, 0, mInput.tellg())
@@ -59,6 +60,11 @@ namespace xml {
         typedef std::stack<state_t>                   state_stack_t;
 
         static istream_t empty_stream;
+
+        istream_t& mInput;
+
+        state_stack_t mSavedStates;
+        state_t       mCurrentState;
 
         index_t tell()
         {
@@ -138,7 +144,7 @@ namespace xml {
             return c;
         }
 
-    protected:
+    public:
         bool match(const char_t c, char_t& res)
         {
             if (peek() != c) {
@@ -240,6 +246,12 @@ namespace xml {
 
             res = read();
             return true;
+        }
+
+        bool read_eof()
+        {
+            char_t c;
+            return match('\0', c);
         }
 
         bool read_upper_letter(char_t& c)
@@ -735,10 +747,10 @@ namespace xml {
             if(!read_quote(quote))
                 goto error;
 
-            if(!func(quote, value))
+            if(!(*this.*func)(quote, value))
                 goto error;
 
-            if(!match(quote))
+            if(!match(quote, quote))
                 goto error;
 
             drop();
@@ -753,16 +765,17 @@ namespace xml {
         template <typename funcT1, typename funcT2>
         bool read_name_and_quoted_value(funcT1 func1, string_t& name, funcT2 func2, string_t& value)
         {
+            char_t c;
             name.clear();
             value.clear();
             push();
 
-            if(!func1(name))
+            if(!(*this.*func1)(name))
                 goto error;
 
            read_spaces();
 
-            if(!match('='))
+            if(!match('=', c))
                 goto error;
 
            read_spaces();
@@ -774,16 +787,11 @@ namespace xml {
             return true;
 
         error:
+            name.clear();
             value.clear();
             pop();
             return false;
         }
-
-    private:
-        istream_t& mInput;
-
-        state_stack_t mSavedStates;
-        state_t       mCurrentState;
     };
 }
 

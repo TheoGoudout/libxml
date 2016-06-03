@@ -16,7 +16,7 @@ namespace xml {
      *                By default, char and wchar_t are supported.
      */
     template <typename charT>
-    class basic_node_interface : public basic_readable<charT>, public basic_writeable<charT> {
+    class basic_node_interface {
     public:
         //! \brief Returns the type of a node.
         /*!
