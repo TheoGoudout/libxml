@@ -136,8 +136,7 @@ if(DOXYGEN_FOUND)
         # Add rule to create doxygen documentation
         add_custom_command(
             OUTPUT ${DOXYGEN_OUTPUT}
-            COMMAND ${CMAKE_COMMAND} -E echo "Building documentation...\n"
-            COMMAND ${DOXYGEN_EXECUTABLE} ${DOXYGEN_INPUT}
+            COMMAND ${DOXYGEN_EXECUTABLE} ${DOXYGEN_INPUT} 2>&1 > doxygen.out
             WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
             MAIN_DEPENDENCY ${DOXYGEN_INPUT}
             DEPENDS ${DOXYGEN_INPUT_HEADERS}
@@ -148,8 +147,7 @@ if(DOXYGEN_FOUND)
     # Add rule to create PDF from LaTeX
     add_custom_command(
         OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/latex/refman.pdf
-        COMMAND ${CMAKE_COMMAND} -E echo "Building PDF file...\n"
-        COMMAND make
+        COMMAND make 2>&1 > latex.out
         WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/latex
         MAIN_DEPENDENCY ${CMAKE_CURRENT_BINARY_DIR}/latex/refman.tex
         DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/latex/Makefile
