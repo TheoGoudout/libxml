@@ -7,12 +7,12 @@ find_package(Doxygen)
 if(DOXYGEN_FOUND)
 
     # Define parameters
-    option(INSTALL_HTML_DOC    "Whether a HTML documentation should be installed." OFF)
+    option(INSTALL_HTML_DOC    "Whether a HTML documentation should be installed."                             OFF)
     option(INSTALL_LATEX_DOC   "Whether a PDF documentation (generated from LaTeX files) should be installed." OFF)
-    option(INSTALL_RTF_DOC     "Whether a RTF documentation should be installed." OFF)
-    option(INSTALL_MAN_DOC     "Whether a linux manual should be installed." ON)
-    option(INSTALL_XML_DOC     "Whether a XML documentation should be installed." OFF)
-    option(INSTALL_DOCBOOK_DOC "Whether a Docbook documentation should be installed." OFF)
+    option(INSTALL_RTF_DOC     "Whether a RTF documentation should be installed."                              OFF)
+    option(INSTALL_MAN_DOC     "Whether a linux manual should be installed."                                   ON )
+    option(INSTALL_XML_DOC     "Whether a XML documentation should be installed."                              OFF)
+    option(INSTALL_DOCBOOK_DOC "Whether a Docbook documentation should be installed."                          OFF)
 
     # Define parameters that might already be set
     if("${XML_INCLUDE_DIR}" STREQUAL "")

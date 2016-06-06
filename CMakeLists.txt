@@ -1,5 +1,9 @@
 cmake_minimum_required(VERSION 3.1.0 FATAL_ERROR)
 
+# Define parameters
+option(BUILD_SHARED_LIBRARY "Whether the shared library should be built." ON)
+option(BUILD_STATIC_LIBRARY "Whether the static library should be built." OFF)
+
 # Define project
 project(libxml VERSION 0.1 LANGUAGES CXX)
 
@@ -30,39 +34,61 @@ set(XML_HEADER_FILES
 # Set include directory of library
 include_directories(include)
 
-# Add source files to library
-add_library(xml        SHARED ${XML_SOURCE_FILES})
-add_library(xml_static STATIC ${XML_SOURCE_FILES})
-
 # Set compilation flags
 set(CMAKE_CXX_FLAGS_DEFAULT "-O2 -g")
 set(CMAKE_CXX_FLAGS_RELEASE "-O2")
 set(CMAKE_CXX_FLAGS_DEBUG  "-O0 -g")
 set(CMAKE_CXX_FLAGS "-Wall -Werror -fno-rtti" )
 
-# Set C++11 flag
-target_compile_features(xml        PRIVATE cxx_variadic_templates)
-target_compile_features(xml_static PRIVATE cxx_variadic_templates)
+# Register dynamic library
+if(BUILD_SHARED_LIBRARY)
+    # Add source files to library
+    add_library(xml SHARED ${XML_SOURCE_FILES})
 
-# Set targets properties
-set_target_properties(xml PROPERTIES
-    VERSION ${libxml_VERSION}
-    SOVERSION ${libxml_VERSION}
-)
-set_target_properties(xml_static PROPERTIES
-    VERSION ${libxml_VERSION}
-)
+    # Set C++11 flag
+    target_compile_features(xml PRIVATE cxx_variadic_templates)
 
-# Install library
-install(TARGETS xml xml_static
-    LIBRARY DESTINATION "${CMAKE_INSTALL_PREFIX}/lib"
-    ARCHIVE DESTINATION "${CMAKE_INSTALL_PREFIX}/lib"
-)
+    # Set targets properties
+    set_target_properties(xml PROPERTIES
+        VERSION ${libxml_VERSION}
+        SOVERSION ${libxml_VERSION}
+    )
 
-# Install headers
-install(FILES ${XML_HEADER_FILES}
-    DESTINATION "${CMAKE_INSTALL_PREFIX}/include/xml/${libxml_VERSION}"
-)
+    # Install library
+    install(TARGETS xml
+        LIBRARY DESTINATION "${CMAKE_INSTALL_PREFIX}/lib"
+        ARCHIVE DESTINATION "${CMAKE_INSTALL_PREFIX}/lib"
+    )
+
+endif()
+
+# Register static library
+if(BUILD_STATIC_LIBRARY)
+    # Add source files to library
+    add_library(xml_static STATIC ${XML_SOURCE_FILES})
+
+    # Set C++11 flag
+    target_compile_features(xml_static PRIVATE cxx_variadic_templates)
+
+    # Set targets properties
+    set_target_properties(xml_static PROPERTIES
+        VERSION ${libxml_VERSION}
+    )
+
+    # Install library
+    install(TARGETS xml_static
+        LIBRARY DESTINATION "${CMAKE_INSTALL_PREFIX}/lib"
+        ARCHIVE DESTINATION "${CMAKE_INSTALL_PREFIX}/lib"
+    )
+
+endif()
+
+if(BUILD_SHARED_LIBRARY OR BUILD_STATIC_LIBRARY)
+    # Install headers
+    install(FILES ${XML_HEADER_FILES}
+        DESTINATION "${CMAKE_INSTALL_PREFIX}/include/xml/${libxml_VERSION}"
+    )
+endif()
 
 
 # Set useful environment variables

@@ -30,7 +30,7 @@ if(CPPUNIT_FOUND)
     string(REPLACE "-fno-rtti" "" CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS})
 
     # Add CPPUNIT include directory
-    include_directories(${CPPUNIT_INCLUDE_DIR})
+    include_directories(${CPPUNIT_INCLUDE_DIRS})
 
     # Add XML include directory
     if(EXISTS ${XML_INCLUDE_DIR})
