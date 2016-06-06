@@ -18,6 +18,16 @@ namespace xml {
     template <typename charT>
     class basic_child_node : public virtual basic_node_interface<charT> {
     public:
+        //! \name Member types
+        //!@{
+        typedef          basic_parent_node<charT>  parent_t;        //!< The parent node type.
+        typedef typename parent_t::child_pointer_t child_pointer_t; //!< The child node type.
+
+        typedef          parent_t*                 parent_pointer_t;   //!< A pointer to the parent type.
+        typedef          parent_t&                 parent_reference_t; //!< A reference to the parent type.
+
+        //!@}
+
         //! \brief Returns the node's parent.
         /*!
          *  This function returns a \c const reference to the node's parent.
@@ -26,7 +36,7 @@ namespace xml {
          *
          *  \return A \c const reference to the node's parent.
          */
-        const basic_parent_node<charT>& parent() const { return *mParent; }
+        const parent_reference_t parent() const { return *mParent; }
 
         //! \brief Returns the node's parent.
         /*!
@@ -36,13 +46,13 @@ namespace xml {
          *
          *  \return A reference to the node's parent.
          */
-        basic_parent_node<charT>& parent() { return *mParent; }
+        parent_reference_t parent() { return *mParent; }
 
     private:
-        basic_parent_node<charT>* mParent;  //!< A pointer to the current node's parent
+        parent_pointer_t mParent;  //!< A pointer to the current node's parent
 
-        basic_child_node<charT>* mPrevious; //!< A pointer to the current previous node sibling. Might be \c null
-        basic_child_node<charT>* mNext;     //!< A pointer to the current next node sibling. Might be \c null
+        child_pointer_t mPrevious; //!< A pointer to the current previous node sibling. Might be \c null
+        child_pointer_t mNext;     //!< A pointer to the current next node sibling. Might be \c null
 
         friend class basic_parent_node<charT>;
     };

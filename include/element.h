@@ -19,16 +19,16 @@ namespace xml {
     public:
         //! \name Member types
         //!@{
-        typedef          basic_parent_node<charT> parent_type;  //!< The parent type
-        typedef          basic_element<charT>     element_type; //!< The element type
-        typedef          basic_text<charT>        text_type;    //!< The text type used in an element
-        typedef typename parent_type::child_type  child_type;   //!< The default child type of an element
-        typedef typename parent_type::size_type   size_type;    //!< The size type of an element
+        typedef          basic_parent_node<charT> parent_t;  //!< The parent type
+        typedef typename parent_t::child_t        child_t;   //!< The default child type of an element
 
-        template <class classT = child_type>
-        using iterator               = typename parent_type::template iterator<classT>;
-        template <class classT = child_type>
-        using const_iterator         = typename parent_type::template const_iterator<classT>;
+        typedef          basic_element<charT>     element_t; //!< The element type
+        typedef          basic_text<charT>        text_t;    //!< The text type used in an element
+
+        template <class classT = child_t>
+        using iterator       = typename parent_t::template iterator<classT>;
+        template <class classT = child_t>
+        using const_iterator = typename parent_t::template const_iterator<classT>;
 
         //!@}
 
@@ -44,7 +44,7 @@ namespace xml {
          *
          *  \return An \c iterator to the newly inserted child.
          */
-        iterator<> insert(const_iterator<> position, const element_type& val);
+        iterator<> insert(const_iterator<> position, const element_t& val);
 
         //! \brief Move an element into this element children.
         /*!
@@ -56,7 +56,7 @@ namespace xml {
          *
          *  \return An \c iterator to the newly inserted child.
          */
-        iterator<> insert(const_iterator<> position, element_type&& val);
+        iterator<> insert(const_iterator<> position, element_t&& val);
 
         //! \brief Insert an text into this element children.
         /*!
@@ -68,7 +68,7 @@ namespace xml {
          *
          *  \return An \c iterator to the newly inserted child.
          */
-        iterator<> insert(const_iterator<> position, const text_type& val);
+        iterator<> insert(const_iterator<> position, const text_t& val);
 
         //! \brief Move an text into this element children.
         /*!
@@ -80,7 +80,7 @@ namespace xml {
          *
          *  \return An \c iterator to the newly inserted child.
          */
-        iterator<> insert(const_iterator<> position, text_type&& val);
+        iterator<> insert(const_iterator<> position, text_t&& val);
     };
 
     typedef basic_element<char>    element;  //!< A specialized \c basic_element for char.

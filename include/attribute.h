@@ -19,10 +19,9 @@ namespace xml {
     public:
         //! \name Member types
         //!@{
-        typedef std::basic_string<charT>  name_type;    //!< The type of an attribute name
-        typedef std::basic_string<charT>  value_type;   //!< The type of an attribute value
-        typedef std::basic_istream<charT> istream_type; //!< The type of stream to parse
-        typedef std::basic_string<charT>  string_type;  //!< The type of string to parse
+        typedef std::basic_string<charT>  name_t;    //!< The type of an attribute name
+        typedef std::basic_string<charT>  value_t;   //!< The type of an attribute value
+        typedef std::basic_string<charT>  string_t;  //!< The type of string to parse
 
         //!@}
 
@@ -39,8 +38,8 @@ namespace xml {
          *  \sa setValue
          */
         basic_attribute(
-            const name_type& name,
-            const value_type& value)
+            const name_t& name,
+            const value_t& value)
         {
             setName(name);
             setValue(value);
@@ -56,7 +55,7 @@ namespace xml {
          *
          *  \sa setName
          */
-        const name_type& name() const;
+        const name_t& name() const;
 
         //! \brief Get the value of an attribute.
         /*!
@@ -68,7 +67,7 @@ namespace xml {
          *
          *  \sa setValue
          */
-        const value_type& value() const;
+        const value_t& value() const;
 
         //! \brief Set the name of an attribute.
         /*!
@@ -80,7 +79,7 @@ namespace xml {
          *
          *  \sa name
          */
-        basic_attribute<charT>& setName(const string_type& name);
+        basic_attribute<charT>& setName(const string_t& name);
 
         //! \brief Set the value of an attribute.
         /*!
@@ -92,11 +91,11 @@ namespace xml {
          *
          *  \sa value
          */
-        basic_attribute<charT>& setValue(const string_type& value);
+        basic_attribute<charT>& setValue(const string_t& value);
 
     private:
-        name_type  mName;  //!< The name of an attribute.
-        value_type mValue; //!< The value of an attribute.
+        name_t  mName;  //!< The name of an attribute.
+        value_t mValue; //!< The value of an attribute.
     };
 
     typedef basic_attribute<char>    attribute;  //!< A specialized \c basic_attribute for char.

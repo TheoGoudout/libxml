@@ -22,12 +22,14 @@ namespace xml {
     public:
         //! \name Member types
         //!@{
-        typedef          basic_parent_node<charT>             parent_type;                  //!< The parent node type.
-        typedef typename parent_type::child_type              child_type;                   //!< The child node type.
-        typedef typename parent_type::size_type               size_type;                    //!< The size type.
+        typedef          basic_parent_node<charT> parent_t; //!< The parent node type.
+        typedef typename parent_t::child_t        child_t;  //!< The child node type.
 
-        typedef          basic_element<charT>                 root_type;                    //!< The root node type.
-        typedef          std::basic_string<charT>             string_type;                  //!< The string type.
+        typedef          basic_element<charT>     root_t;           //!< The root node type.
+        typedef          root_t*                  root_pointer_t;   //!< The root node type.
+        typedef          root_t&                  root_reference_t; //!< The root node type.
+
+        typedef          std::basic_string<charT> string_t; //!< The string type.
 
         //!@}
 
@@ -43,9 +45,9 @@ namespace xml {
             uint8_t major; //!< The major version number.
             uint8_t minor; //!< The minor version number.
 
-            string_type toString() const;      //!< Converts the version to a string formatted as "<major>.<minor>".
-            string_type majorToString() const; //!< Converts the major version number to a string.
-            string_type minorToString() const; //!< Converts the minor version number to a string.
+            string_t toString() const;      //!< Converts the version to a string formatted as "<major>.<minor>".
+            string_t majorToString() const; //!< Converts the major version number to a string.
+            string_t minorToString() const; //!< Converts the minor version number to a string.
         } version; //!< The XML version of this document.
 
         //! \brief The encoding of a XML document
@@ -60,7 +62,7 @@ namespace xml {
                 undefined
             } value;
 
-            string_type toString() const; //!< Converts the document encoding to a string.
+            string_t toString() const; //!< Converts the document encoding to a string.
         } encoding; //!< The encoding version of this document.
 
         //! \brief Whether a XML document is standalone
@@ -77,11 +79,29 @@ namespace xml {
                 undefined
             } value;
 
-            string_type toString() const; //!< Converts the document standalone value to a string.
+            string_t toString() const; //!< Converts the document standalone value to a string.
         } standalone; //!< Whether this XML document is a standalone.
 
+        //! \brief Get a constant reference to the root element of this XML document.
+        /*!
+         *  This function returns a constant reference to the root element of
+         *  the current XML document.
+         *
+         *  \return A constant reference to the root element of this XML document.
+         */
+        const root_reference_t root() const { return *mRoot; }
+
+        //! \brief Get a reference to the root element of this XML document.
+        /*!
+         *  This function returns a reference to the root element of the current
+         *  XML document.
+         *
+         *  \return A reference to the root element of this XML document.
+         */
+        root_reference_t root() { return *mRoot; }
+
     private:
-        root_type*    mRoot;       //!< A pointer to the root element of this document.
+        root_pointer_t mRoot; //!< A pointer to the root element of this document.
     };
 
     typedef basic_document<char>    document;  //!< A specialized \c basic_document for char.

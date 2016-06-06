@@ -15,6 +15,12 @@ namespace xml {
     template <typename charT>
     class basic_node_interface {
     public:
+        //! \name Member types
+        //!@{
+        typedef std::basic_string<charT> type_t; //!< The type of a node type.
+
+        //!@}
+
         //! \brief Returns the type of a node.
         /*!
          *  This functions will return the type of a node.
@@ -23,7 +29,7 @@ namespace xml {
          *
          *  \return A string representing the type of a node.
          */
-        virtual std::basic_string<charT> type() const = 0;
+        virtual type_t type() const = 0;
     };
 
     typedef basic_node_interface<char>    node_interface;  //!< A specialized \c basic_node_interface for char.

@@ -19,7 +19,7 @@ namespace xml {
     public:
         //! \name Member types
         //!@{
-        typedef std::basic_string<charT> string_type; //!< The type of string stored.
+        typedef std::basic_string<charT> string_t; //!< The type of string stored.
 
         //!@}
 
@@ -29,7 +29,7 @@ namespace xml {
         /*!
          *  \return A constant reference to text content.
          */
-        const string_type& data() const;
+        const string_t& data() const;
 
         //! \brief Set text content.
         /*!
@@ -43,10 +43,10 @@ namespace xml {
          *
          *  \throw xml::parsing_exception An error occured whilst parsing data.
          */
-        basic_text<charT>& set_data(const string_type& data);
+        basic_text<charT>& set_data(const string_t& data);
 
     private:
-        string_type mData; //!< The content of a \c basic_text object.
+        string_t mData; //!< The content of a \c basic_text object.
     };
 
     typedef basic_text<char>    text;  //!< A specialized \c basic_text for char.
