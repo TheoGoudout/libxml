@@ -81,14 +81,6 @@ namespace xml {
          *  \return An \c iterator to the newly inserted child.
          */
         iterator<> insert(const_iterator<> position, text_type&& val);
-
-        // TODO:
-        // iterator<> insert(const_iterator<> position, const comment_type& val);
-        // iterator<> insert(const_iterator<> position, comment_type&& val);
-
-        // TODO:
-        // iterator<> insert(const_iterator<> position, const processing_instructions_type& val);
-        // iterator<> insert(const_iterator<> position, processing_instructions_type&& val);
     };
 
     typedef basic_element<char>    element;  //!< A specialized \c basic_element for char.
