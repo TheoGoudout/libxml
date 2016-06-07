@@ -21,6 +21,7 @@ if(CPPUNIT_FOUND)
 
     # Set the list of unit tests
     set(TEST_SOURCE_FILES
+        ${CMAKE_CURRENT_SOURCE_DIR}/test-child-node.cpp
     )
 
     # Enable unit tests
@@ -28,6 +29,9 @@ if(CPPUNIT_FOUND)
 
     # Remove C++ compiler flag
     string(REPLACE "-fno-rtti" "" CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS})
+
+    # Add possible stubs created in tests directory
+    include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
     # Add CPPUNIT include directory
     include_directories(${CPPUNIT_INCLUDE_DIRS})

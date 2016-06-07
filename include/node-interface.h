@@ -30,6 +30,12 @@ namespace xml {
          *  \return A string representing the type of a node.
          */
         virtual type_t type() const = 0;
+
+    protected:
+        static type_t stringToType(const std::string& str)
+        {
+            return type_t(str.begin(), str.end());
+        }
     };
 
     typedef basic_node_interface<char>    node_interface;  //!< A specialized \c basic_node_interface for char.

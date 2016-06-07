@@ -28,6 +28,20 @@ namespace xml {
 
         //!@}
 
+        //! \brief Default constructor
+        /*!
+         *  This constructor initialise the internals of a child node, i.e.
+         *  its parent, and its next and previous child node.
+         *
+         *  \param[in] parent The parent node of this one.
+         */
+        basic_child_node(parent_pointer_t parent = nullptr)
+        :
+            mParent(parent),
+            mPrevious(nullptr),
+            mNext(nullptr)
+        {}
+
         //! \brief Returns the node's parent.
         /*!
          *  This function returns a \c const reference to the node's parent.
@@ -48,7 +62,7 @@ namespace xml {
          */
         parent_reference_t parent() { return *mParent; }
 
-    private:
+    protected:
         parent_pointer_t mParent;  //!< A pointer to the current node's parent
 
         child_pointer_t mPrevious; //!< A pointer to the current previous node sibling. Might be \c null
