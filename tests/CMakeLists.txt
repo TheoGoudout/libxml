@@ -20,7 +20,7 @@ if(CPPUNIT_FOUND)
 
 
     # Set the list of unit tests
-    set(CPPUNIT_TARGETS
+    set(TEST_SOURCE_FILES
     )
 
     # Enable unit tests
@@ -43,39 +43,39 @@ if(CPPUNIT_FOUND)
     endif()
 
     # For each unit test to create
-    foreach(CPPUNIT_TARGET ${CPPUNIT_TARGETS})
+    foreach(TEST_SOURCE_FILE ${TEST_SOURCE_FILES})
+
+        # Get the test executable name
+        get_filename_component(TEST_TARGET ${TEST_SOURCE_FILE} NAME_WE)
 
         # Add the unit test executable
-        add_executable(${CPPUNIT_TARGET}
-            ${CMAKE_CURRENT_SOURCE_DIR}/${CPPUNIT_TARGET}.cpp
+        add_executable(${TEST_TARGET}
+            ${TEST_SOURCE_FILE}
             ${CMAKE_CURRENT_SOURCE_DIR}/main.cpp
         )
 
         # Link against CPPUNIT libraries
-        target_link_libraries(${CPPUNIT_TARGET} ${CPPUNIT_LIBRARIES})
+        target_link_libraries(${TEST_TARGET} ${CPPUNIT_LIBRARIES})
 
         # Link against XML library
-        target_link_libraries(${CPPUNIT_TARGET} -lxml)
+        target_link_libraries(${TEST_TARGET} -lxml)
+
+        # Set C++11 flag
+        target_compile_features(${TEST_TARGET} PRIVATE cxx_variadic_templates)
 
         # Register the unit test
-        add_test(NAME ${CPPUNIT_TARGET} COMMAND ${CPPUNIT_TARGET})
+        add_test(NAME ${TEST_TARGET} COMMAND ${TEST_TARGET})
 
-        # Add custom command to create unit test timestamp
-        add_custom_command(
-            OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/${CPPUNIT_TARGET}.stamp
-            COMMAND ${CMAKE_COMMAND} -E echo "Running ${CPPUNIT_TARGET} ...\n"
-            COMMAND ${CPPUNIT_TARGET}
-            COMMAND ${CMAKE_COMMAND} -E touch "${CPPUNIT_TARGET}.stamp"
+        # Add custom target to run unit tests during build
+        add_custom_target(${TEST_TARGET}.stamp ALL
+            COMMAND ${TEST_TARGET}
+            COMMAND ${CMAKE_COMMAND} -E touch "${TEST_TARGET}.stamp"
             WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
-            MAIN_DEPENDENCY ${CMAKE_CURRENT_BINARY_DIR}/${CPPUNIT_TARGET}
+            DEPENDS ${TEST_TARGET}
         )
 
-        # Add timestamp as target
-        set(CPPUNIT_TESTS_TIMESTAMPS ${CPPUNIT_TESTS_TIMESTAMPS} "${CMAKE_CURRENT_BINARY_DIR}/${CPPUNIT_TARGET}.stamp")
     endforeach()
 
-    # Add tests custom target
-    add_custom_target(tests ALL DEPENDS ${CPPUNIT_TESTS_TIMESTAMPS})
 else()
     message(WARNING "CPPUNIT not found.")
 endif()
