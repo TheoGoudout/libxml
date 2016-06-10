@@ -2,9 +2,11 @@
 #define basic_child_node_H_INCLUDED
 
 #include <node-interface.h>
-#include <parent-node.h>
 
 namespace xml {
+    template <typename charT>
+    class basic_parent_node;
+
     //! \brief An abstract XML node that has a parent and siblings.
     /*!
      *  This class represents an abstract XML node that has a parent
@@ -20,11 +22,13 @@ namespace xml {
     public:
         //! \name Member types
         //!@{
-        typedef          basic_parent_node<charT>  parent_t;        //!< The parent node type.
-        typedef typename parent_t::child_pointer_t child_pointer_t; //!< The child node type.
+        typedef basic_parent_node<charT>  parent_t;           //!< The parent node type.
+        typedef parent_t*                 parent_pointer_t;   //!< A pointer to the parent type.
+        typedef parent_t&                 parent_reference_t; //!< A reference to the parent type.
 
-        typedef          parent_t*                 parent_pointer_t;   //!< A pointer to the parent type.
-        typedef          parent_t&                 parent_reference_t; //!< A reference to the parent type.
+        typedef basic_child_node<charT>   child_t;           //!< The type of children this node is.
+        typedef child_t*                  child_pointer_t;   //!< Pointer to \c child_t.
+        typedef child_t&                  child_reference_t; //!< Reference to \c child_t.
 
         //!@}
 
@@ -41,6 +45,13 @@ namespace xml {
             mPrevious(nullptr),
             mNext(nullptr)
         {}
+
+        //! \brief Clone the current \c basic_child_node.
+        /*!
+         *  This function creates a deep copy of this \c basic_child_node,
+         *  and returns a pointer to it. It is used when inserting
+         */
+        virtual child_pointer_t clone() const = 0;
 
         //! \brief Returns the node's parent.
         /*!

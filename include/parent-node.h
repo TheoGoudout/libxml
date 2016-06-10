@@ -5,6 +5,7 @@
 #include <initializer_list>
 
 #include <node-interface.h>
+#include <child-node.h>
 
 namespace xml {
     template <typename charT>
@@ -14,7 +15,7 @@ namespace xml {
     /*!
      *  This class represents an abstract XML node that has children.
      *
-     *  \sa basic_child_node<charT>
+     *  \sa xml::basic_child_node
      *
      *  \tparam charT The type of character used in the XML node.
      *                By default, char and wchar_t are supported.
@@ -25,8 +26,11 @@ namespace xml {
     public:
         //! \name Member types
         //!@{
-        typedef basic_child_node<charT> child_t;         //!< The type of children this node has.
-        typedef child_t*                child_pointer_t; //!< Pointer to \c child_t.
+        typedef          basic_parent_node<charT>   parent_t;          //!< The type of this node.
+
+        typedef          basic_child_node<charT>    child_t;           //!< The type of children this node has.
+        typedef typename child_t::child_pointer_t   child_pointer_t;   //!< Pointer to \c child_t.
+        typedef typename child_t::child_reference_t child_reference_t; //!< Reference to \c child_t.
 
         //!@}
 

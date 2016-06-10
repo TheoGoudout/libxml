@@ -32,6 +32,18 @@ namespace xml {
         virtual type_t type() const = 0;
 
     protected:
+
+        //! \brief Convert a standard string to a node type.
+        /*!
+         *  This function will convert a standard string to a node type.
+         *  At the moment, a node type is a \c basic_string, but this could
+         *  change in the future. Don't use this function to convert string
+         *  from one type of char to another.
+         *
+         *  \param[in] str The standard string to convert to a node type.
+         *
+         *  \return A node type representing the given string.
+         */
         static type_t stringToType(const std::string& str)
         {
             return type_t(str.begin(), str.end());
