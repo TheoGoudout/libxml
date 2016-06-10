@@ -327,7 +327,10 @@ namespace xml {
          *  \tparam classT The type of object to iterate through.
          */
         template <class classT = child_t>
-        iterator<classT> begin() noexcept;
+        iterator<classT> begin() noexcept
+        {
+            return iterator<classT>(mFirst);
+        }
 
         //! \brief Return iterator to beginning.
         /*!
@@ -336,7 +339,10 @@ namespace xml {
          *  \tparam classT The type of object to iterate through.
          */
         template <class classT = child_t>
-        const_iterator<classT> begin() const noexcept;
+        const_iterator<classT> begin() const noexcept
+        {
+            return const_iterator<classT>(mFirst);
+        }
 
         //! \brief Return iterator to past-the-end.
         /*!
@@ -345,7 +351,10 @@ namespace xml {
          *  \tparam classT The type of object to iterate through.
          */
         template <class classT = child_t>
-        iterator<classT> end() noexcept;
+        iterator<classT> end() noexcept
+        {
+            return iterator<classT>(nullptr);
+        }
 
         //! \brief Return iterator to past-the-end.
         /*!
@@ -354,7 +363,10 @@ namespace xml {
          *  \tparam classT The type of object to iterate through.
          */
         template <class classT = child_t>
-        const_iterator<classT> end() const noexcept;
+        const_iterator<classT> end() const noexcept
+        {
+            return const_iterator<classT>(nullptr);
+        }
 
         //! \brief Return reverse iterator to reverse beginning.
         /*!
@@ -363,7 +375,10 @@ namespace xml {
          *  \tparam classT The type of object to iterate through.
          */
         template <class classT = child_t>
-        reverse_iterator<classT> rbegin() noexcept;
+        reverse_iterator<classT> rbegin() noexcept
+        {
+            return reverse_iterator<classT>(nullptr);
+        }
 
         //! \brief Return reverse iterator to reverse beginning.
         /*!
@@ -372,7 +387,10 @@ namespace xml {
          *  \tparam classT The type of object to iterate through.
          */
         template <class classT = child_t>
-        const_reverse_iterator<classT> rbegin() const noexcept;
+        const_reverse_iterator<classT> rbegin() const noexcept
+        {
+            return const_reverse_iterator<classT>(nullptr);
+        }
 
         //! \brief Return reverse iterator to reverse past-the-end.
         /*!
@@ -381,7 +399,10 @@ namespace xml {
          *  \tparam classT The type of object to iterate through.
          */
         template <class classT = child_t>
-        reverse_iterator<classT> rend() noexcept;
+        reverse_iterator<classT> rend() noexcept
+        {
+            return reverse_iterator<classT>(mFirst);
+        }
 
         //! \brief Return reverse iterator to reverse past-the-end.
         /*!
@@ -390,7 +411,10 @@ namespace xml {
          *  \tparam classT The type of object to iterate through.
          */
         template <class classT = child_t>
-        const_reverse_iterator<classT> rend() const noexcept;
+        const_reverse_iterator<classT> rend() const noexcept
+        {
+            return const_reverse_iterator<classT>(mFirst);
+        }
 
         //! \brief Return iterator to beginning.
         /*!
@@ -440,7 +464,27 @@ namespace xml {
          *  \return An \c iterator pointing to the newly inserted element.
          */
         template <class classT = child_t>
-        iterator<classT> insert(const_iterator<classT> position, const child_t& val);
+        iterator<classT> insert(const_iterator<classT> position, const child_t& val)
+        {
+            child_pointer_t ptr = val.clone();
+
+            child_pointer_t after = position.mPtr;
+            child_pointer_t before = after == nullptr ? mLast : after->mPrevious;
+
+            ptr->mNext = after;
+            if (after != nullptr)
+                after->mPrevious = ptr;
+            else
+                mLast = ptr;
+
+            ptr->mPrevious = before;
+            if (before != nullptr)
+                before->mNext = ptr;
+            else
+                mFirst = ptr;
+
+            return begin();
+        }
 
         //! \brief Copy a \c child_t \c n times into the inserted elements.
         /*!
