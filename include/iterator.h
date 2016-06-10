@@ -147,7 +147,7 @@ namespace xml {
          */
         virtual basic_iterator<charT, classT>& operator++()
         {
-            mPtr = findNext(mPtr);
+            mPtr = findNext(mPtr->mNext);
             return *this;
         }
 
@@ -162,7 +162,7 @@ namespace xml {
          */
         virtual basic_iterator<charT, classT>& operator--()
         {
-            mPtr = findPrevious(mPtr);
+            mPtr = findPrevious(mPtr->mPrevious);
             return *this;
         }
 

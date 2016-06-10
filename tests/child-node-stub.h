@@ -11,8 +11,10 @@ public:
     typedef typename node_interface_t::type_t         type_t;
 
     typedef          xml::basic_child_node<charT> child_t;
-    typedef typename child_t::parent_t            parent_t;
     typedef typename child_t::child_pointer_t     child_pointer_t;
+    typedef typename child_t::child_move_t        child_move_t;
+
+    typedef typename child_t::parent_t            parent_t;
     typedef typename child_t::parent_pointer_t    parent_pointer_t;
     typedef typename child_t::parent_reference_t  parent_reference_t;
 
@@ -22,6 +24,8 @@ public:
         mId(sIdCreator++)
     {}
 
+    virtual ~child_node_stub() {}
+
     virtual type_t type () const
     {
         return node_interface_t::stringToType("child-node-stub");
@@ -30,6 +34,12 @@ public:
     virtual child_pointer_t clone() const
     {
         return new child_node_stub<charT>(mId);
+    }
+
+    virtual child_pointer_t clone(child_move_t rhs) const
+    {
+        const int id = static_cast<child_node_stub<charT>&&>(rhs).mId;
+        return new child_node_stub<charT>(id);
     }
 
     parent_pointer_t parent()

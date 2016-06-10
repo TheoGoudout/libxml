@@ -27,6 +27,8 @@ namespace xml {
     public:
         //! \name Member types
         //!@{
+        typedef basic_node_interface<charT> node_interface_t; //! The base type of this node.
+
         typedef          basic_child_node<charT>    child_t;           //!< The type of children this node has.
         typedef typename child_t::child_pointer_t   child_pointer_t;   //!< Pointer to \c child_t.
         typedef typename child_t::child_reference_t child_reference_t; //!< Reference to \c child_t.
@@ -78,6 +80,29 @@ namespace xml {
 
         //!@}
 
+        //! \brief Default constructor
+        /*!
+         *  This constructor initialise the internals of a parent node, i.e.
+         *  its first and last child node.
+         */
+        basic_parent_node()
+        :
+            node_interface_t(),
+            mFirst(nullptr),
+            mLast(nullptr)
+        {}
+
+        //! \brief Default destructor
+        /*!
+         *  This destructor reset all the internal values.
+         */
+        virtual ~basic_parent_node()
+        {
+            clear();
+
+            mFirst = nullptr;
+            mLast = nullptr;
+        }
 
         //! \brief Return iterator to beginning.
         /*!
@@ -182,7 +207,10 @@ namespace xml {
          *  \tparam classT The type of object to iterate through.
          */
         template <class classT = child_t>
-        const_iterator<classT> cbegin() const noexcept { return begin(); }
+        const_iterator<classT> cbegin() const noexcept
+        {
+            return begin();
+        }
 
         //! \brief Return iterator to past-the-end.
         /*!
@@ -191,7 +219,10 @@ namespace xml {
          *  \tparam classT The type of object to iterate through.
          */
         template <class classT = child_t>
-        const_iterator<classT> cend() const noexcept { return end(); }
+        const_iterator<classT> cend() const noexcept
+        {
+            return end();
+        }
 
         //! \brief Return reverse iterator to reverse beginning.
         /*!
@@ -200,7 +231,10 @@ namespace xml {
          *  \tparam classT The type of object to iterate through.
          */
         template <class classT = child_t>
-        const_reverse_iterator<classT> crbegin() const noexcept { return rbegin(); }
+        const_reverse_iterator<classT> crbegin() const noexcept
+        {
+            return rbegin();
+        }
 
         //! \brief Return reverse iterator to reverse past-the-end.
         /*!
@@ -209,7 +243,10 @@ namespace xml {
          *  \tparam classT The type of object to iterate through.
          */
         template <class classT = child_t>
-        const_reverse_iterator<classT> crend() const noexcept { return rend(); }
+        const_reverse_iterator<classT> crend() const noexcept
+        {
+            return rend();
+        }
 
     protected:
         //! \brief Copy a \c child_t into the inserted elements.
@@ -225,24 +262,7 @@ namespace xml {
         template <class classT = child_t>
         iterator<classT> insert(const_iterator<classT> position, const child_t& val)
         {
-            child_pointer_t ptr = val.clone();
-
-            child_pointer_t after = position.mPtr;
-            child_pointer_t before = after == nullptr ? mLast : after->mPrevious;
-
-            ptr->mNext = after;
-            if (after != nullptr)
-                after->mPrevious = ptr;
-            else
-                mLast = ptr;
-
-            ptr->mPrevious = before;
-            if (before != nullptr)
-                before->mNext = ptr;
-            else
-                mFirst = ptr;
-
-            return begin();
+            return insert(position, val.clone());
         }
 
         //! \brief Copy a \c child_t \c n times into the inserted elements.
@@ -257,7 +277,13 @@ namespace xml {
          *  \return An \c iterator pointing to the first newly inserted element.
          */
         template <class classT = child_t>
-        iterator<classT> insert(const_iterator<classT> position, size_t n, const child_t& val);
+        iterator<classT> insert(const_iterator<classT> position, size_t n, const child_t& val)
+        {
+            if (n == 0)
+                return iterator<classT>(position.mPtr);
+
+            return insert(insert(position, n - 1, val), val);
+        }
 
         //! \brief Copy a set of \c child_t into the inserted elements.
         /*!
@@ -274,7 +300,13 @@ namespace xml {
          *  \return An \c iterator pointing to the first newly inserted element.
          */
         template <class InputIterator, class classT = child_t>
-        iterator<classT> insert (const_iterator<classT> position, InputIterator first, InputIterator last);
+        iterator<classT> insert (const_iterator<classT> position, InputIterator first, InputIterator last)
+        {
+            if (first == last)
+                return iterator<classT>(position.mPtr);
+
+            return insert(insert(position, first++, last), *first);
+        }
 
         //! \brief Move a \c child_t into the inserted elements.
         /*!
@@ -287,7 +319,10 @@ namespace xml {
          *  \return An \c iterator pointing to the first newly inserted element.
          */
         template <class classT = child_t>
-        iterator<classT> insert (const_iterator<classT> position, child_t&& val);
+        iterator<classT> insert (const_iterator<classT> position, child_t&& val)
+        {
+            return insert(position, val.clone(std::move(val)));
+        }
 
         //! \brief Copy a list of \c child_t into the inserted elements.
         /*!
@@ -300,7 +335,10 @@ namespace xml {
          *  \return An \c iterator pointing to the first newly inserted element.
          */
         template <class classT = child_t>
-        iterator<classT> insert (const_iterator<classT> position, std::initializer_list<child_t> il);
+        iterator<classT> insert (const_iterator<classT> position, std::initializer_list<child_t> il)
+        {
+            return insert(position, il.begin(), il.end());
+        }
 
         //! \brief Copy a \c child_t and insert it before the first element.
         /*!
@@ -312,7 +350,10 @@ namespace xml {
          *  \return An \c iterator pointing to the newly inserted element.
          */
         template <class classT = child_t>
-        iterator<classT> push_front(const child_t& val) { return insert(cbegin(), val); }
+        iterator<classT> push_front(const child_t& val)
+        {
+            return insert(cbegin(), val);
+        }
 
         //! \brief Move a \c child_t before the first element.
         /*!
@@ -324,7 +365,10 @@ namespace xml {
          *  \return An \c iterator pointing to the newly inserted element.
          */
         template <class classT = child_t>
-        iterator<classT> push_front(child_t&& val) { return insert(cbegin(), val); }
+        iterator<classT> push_front(child_t&& val)
+        {
+            return insert(cbegin(), std::move(val));
+        }
 
         //! \brief Copy a \c child_t and insert it after the last element.
         /*!
@@ -336,7 +380,10 @@ namespace xml {
          *  \return An \c iterator pointing to the newly inserted element.
          */
         template <class classT = child_t>
-        iterator<classT> push_back(const child_t& val) { return insert(cend(), val); }
+        iterator<classT> push_back(const child_t& val)
+        {
+            return insert(cend(), val);
+        }
 
         //! \brief Move a \c child_t after the last element.
         /*!
@@ -348,7 +395,10 @@ namespace xml {
          *  \return An \c iterator pointing to the newly inserted element.
          */
         template <class classT = child_t>
-        iterator<classT> push_back(child_t&& val) { return insert(cend(), val); }
+        iterator<classT> push_back(child_t&& val)
+        {
+            return insert(cend(), std::move(val));
+        }
 
         //! \brief Allocate a \c child_t and insert it into the inserted elements.
         /*!
@@ -363,8 +413,11 @@ namespace xml {
          *
          *  \return An \c iterator pointing to the newly inserted element.
          */
-        template <class classT, typename ... Args>
-        iterator<classT> emplace(const_iterator<classT> position, Args&& ... args);
+        template <class classT = child_t, class classU, typename ... Args>
+        iterator<classT> emplace(const_iterator<classT> position, Args&& ... args)
+        {
+            return insert(position, new classU(std::forward(args ...)));
+        }
 
         //! \brief Allocate a \c child_t and insert it before the first element.
         /*!
@@ -378,8 +431,11 @@ namespace xml {
          *
          *  \return An \c iterator pointing to the newly inserted element.
          */
-        template <class classT, typename ... Args>
-        iterator<classT> emplace_front(Args&& ... args) { return emplace(cbegin(), args ...); }
+        template <class classT = child_t, class classU, typename ... Args>
+        iterator<classT> emplace_front(Args&& ... args)
+        {
+            return emplace(cbegin(), std::forward(args ...));
+        }
 
         //! \brief Allocate a \c child_t and insert it after the last element.
         /*!
@@ -393,8 +449,11 @@ namespace xml {
          *
          *  \return An \c iterator pointing to the newly inserted element.
          */
-        template <class classT, typename ... Args>
-        iterator<classT> emplace_back(Args&& ... args) { return emplace(cend(), args ...); }
+        template <class classT = child_t, class classU, typename ... Args>
+        iterator<classT> emplace_back(Args&& ... args)
+        {
+            return emplace(cend(), std::forward(args ...));
+        }
 
         //! \brief Erase element.
         /*!
@@ -402,10 +461,30 @@ namespace xml {
          *
          *  \param [in] position An iterator to the element to erase.
          *
-         *  \return An iterator pointing to the element that followed the erased element. 
+         *  \return An iterator pointing to the element that followed the erased element.
          */
         template <class classT = child_t>
-        iterator<classT> erase (iterator<classT> position);
+        iterator<classT> erase (iterator<classT> position)
+        {
+            child_pointer_t ptr = position.mPtr;
+
+            child_pointer_t next = ptr->mNext;
+            child_pointer_t previous = ptr->mPrevious;
+
+            if (next)
+                next->mPrevious = previous;
+            else
+                mLast = previous;
+
+            if (previous)
+                previous->mNext = next;
+            else
+                mFirst = next;
+
+            delete ptr;
+
+            return iterator<classT>(next);
+        }
 
         //! \brief Erase a range of elements.
         /*!
@@ -414,28 +493,79 @@ namespace xml {
          *  \param [in] first The first element to erase.
          *  \param [in] last  The first element not to erase after first.
          *
-         *  \return An iterator pointing to the element that followed the erased element. 
+         *  \return An iterator pointing to the element that followed the erased element.
          */
         template <class classT = child_t>
-        iterator<classT> erase (iterator<classT> first, iterator<classT> last);
+        iterator<classT> erase (iterator<classT> first, iterator<classT> last)
+        {
+            if (first == last)
+                return last;
+
+            erase(first);
+            return erase(++first, last);
+        }
 
         //! \brief Delete first element.
         /*!
          *  Removes the first element and destroy it.
          */
-        void pop_front() { erase(begin()); }
+        void pop_front()
+        {
+            erase(begin());
+        }
 
         //! \brief Delete last element.
         /*!
          *  Removes the last element and destroy it.
          */
-        void pop_back() { erase(rbegin().base()); }
+        void pop_back()
+        {
+            erase(rbegin().base());
+        }
 
         //! \brief Delete all elements.
         /*!
          *  Removes all elements and destroy them.
          */
-        void clear() noexcept;
+        void clear() noexcept
+        {
+            erase(cbegin(), cend());
+        }
+
+    private:
+        //! \brief Insert a \c child_t into the inserted elements.
+        /*!
+         *  The pointer will be inserted into the list of children of this
+         *  \c basic_parent_node before the item pointed by the \c const_iterator.
+         *
+         *  \param [in] position A \c const_iterator before which \c val should be moved.
+         *  \param [in] val      The pointer to be insert.
+         *
+         *  \return An \c iterator pointing to the newly inserted element.
+         */
+        template <class classT = child_t>
+        iterator<classT> insert (const_iterator<classT> position, child_pointer_t ptr)
+        {
+            child_pointer_t after = position.mPtr;
+            child_pointer_t before = after == nullptr ? mLast : after->mPrevious;
+
+            ptr->mParent = this;
+
+            ptr->mNext = after;
+            if (after != nullptr)
+                after->mPrevious = ptr;
+            else
+                mLast = ptr;
+
+            ptr->mPrevious = before;
+            if (before != nullptr)
+                before->mNext = ptr;
+            else
+                mFirst = ptr;
+
+            return iterator<classT>(ptr);
+        }
+
     protected:
         child_pointer_t mFirst; //!< A pointer to the first element.
         child_pointer_t mLast;  //!< A pointer to the last element.

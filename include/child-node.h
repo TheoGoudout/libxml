@@ -25,6 +25,8 @@ namespace xml {
     public:
         //! \name Member types
         //!@{
+        typedef basic_node_interface<charT> node_interface_t; //! The base type of this node.
+
         typedef basic_parent_node<charT>  parent_t;           //!< The parent node type.
         typedef parent_t*                 parent_pointer_t;   //!< A pointer to the parent type.
         typedef parent_t&                 parent_reference_t; //!< A reference to the parent type.
@@ -32,6 +34,7 @@ namespace xml {
         typedef basic_child_node<charT>   child_t;           //!< The type of children this node is.
         typedef child_t*                  child_pointer_t;   //!< Pointer to \c child_t.
         typedef child_t&                  child_reference_t; //!< Reference to \c child_t.
+        typedef child_t&&                 child_move_t;      //!< Move a \c child_t.
 
         //!@}
 
@@ -44,17 +47,38 @@ namespace xml {
          */
         basic_child_node(parent_pointer_t parent = nullptr)
         :
+            node_interface_t(),
             mParent(parent),
             mPrevious(nullptr),
             mNext(nullptr)
         {}
 
+        //! \brief Default destructor
+        /*!
+         *  This destructor reset all the internal values.
+         */
+        virtual ~basic_child_node()
+        {
+            mNext = nullptr;
+            mPrevious = nullptr;
+            mParent = nullptr;
+        }
+
         //! \brief Clone the current \c basic_child_node.
         /*!
          *  This function creates a deep copy of this \c basic_child_node,
-         *  and returns a pointer to it. It is used when inserting
+         *  and returns a pointer to it. It is used when copying element in
+         *  parent node.
          */
         virtual child_pointer_t clone() const = 0;
+
+        //! \brief Clone the given \c basic_child_node using move syntax.
+        /*!
+         *  This function creates a deep copy of the given\c basic_child_node,
+         *  and returns a pointer to it. It is used when copying element in
+         *  parent node.
+         */
+        virtual child_pointer_t clone(child_move_t rhs) const = 0;
 
         //! \brief Returns the node's parent.
         /*!

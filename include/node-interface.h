@@ -21,6 +21,18 @@ namespace xml {
 
         //!@}
 
+        //! \brief Default constructor
+        /*!
+         *  This constructor does nothing.
+         */
+        basic_node_interface() {}
+
+        //! \brief Default destructor
+        /*!
+         *  This destructor does nothing.
+         */
+        virtual ~basic_node_interface() {}
+
         //! \brief Returns the type of a node.
         /*!
          *  This functions will return the type of a node.

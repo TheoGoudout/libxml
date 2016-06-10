@@ -15,6 +15,35 @@ namespace xml {
      */
     template <typename charT>
     class basic_node : public basic_parent_node<charT>, public basic_child_node<charT> {
+    public:
+        //! \name Member types
+        //!@{
+        typedef basic_parent_node<charT>  parent_t;           //!< The parent node type.
+        typedef parent_t*                 parent_pointer_t;   //!< A pointer to the parent type.
+
+        typedef basic_child_node<charT>   child_t;           //!< The type of children this node is.
+
+        //!@}
+
+        //! \brief Default constructor
+        /*!
+         *  This constructor initialise the internals of a child node and the
+         *  internals of a parent node.
+         *
+         *  \param[in] parent The parent node of this one.
+         */
+        basic_node(parent_pointer_t parent = nullptr)
+        :
+            parent_t(),
+            child_t(parent)
+        {}
+
+        //! \brief Default destructor
+        /*!
+         *  This destructor does nothing.
+         */
+        virtual ~basic_node()
+        {}
 
     };
 

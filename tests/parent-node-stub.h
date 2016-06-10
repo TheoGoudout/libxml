@@ -33,6 +33,8 @@ public:
         mId(sIdCreator++)
     {}
 
+    virtual ~parent_node_stub() {}
+
     virtual type_t type () const
     {
         return node_interface_t::stringToType("parent-node-stub");
