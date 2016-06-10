@@ -6,33 +6,78 @@
 template <typename charT>
 class parent_node_stub : public xml::basic_parent_node<charT>
 {
-    public:
-        typedef          xml::basic_node_interface<charT> node_interface_t;
-        typedef typename node_interface_t::type_t         type_t;
+public:
+    typedef          xml::basic_node_interface<charT> node_interface_t;
+    typedef typename node_interface_t::type_t         type_t;
 
-        typedef          xml::basic_parent_node<charT>  parent_node_t;
-        typedef typename parent_node_t::child_pointer_t child_pointer_t;
+    typedef          xml::basic_parent_node<charT> parent_t;
+    typedef typename parent_t::child_t             child_t;
+    typedef typename parent_t::child_pointer_t     child_pointer_t;   //!< Pointer to \c child_t.
+    typedef typename parent_t::child_reference_t   child_reference_t; //!< Reference to \c child_t.
 
-        parent_node_stub()
-        :
-            parent_node_t()
-        {}
+    template <class classT>
+    using basic_iterator = xml::basic_parent_node<charT>::basic_iterator<classT>;
 
-        virtual type_t type () const
-        {
-            return node_interface_t::stringToType("parent-node-stub");
-        }
+    template <class classT = child_t>
+    using iterator = basic_iterator<classT>;
 
-        child_pointer_t first ()
-        {
-            return parent_node_t::mFirst;
-        }
+    template <class classT = child_t>
+    using const_iterator = basic_iterator<const classT>;
 
-        child_pointer_t last ()
-        {
-            return parent_node_t::mLast;
-        }
+    template <class classT = child_t>
+    using reverse_iterator = std::reverse_iterator<iterator<classT> >;
+
+    template <class classT = child_t>
+    using const_reverse_iterator = std::reverse_iterator<const_iterator<classT> >;
+
+    parent_node_stub()
+    :
+        parent_t(),
+        mId(sIdCreator++)
+    {}
+
+    virtual type_t type () const
+    {
+        return node_interface_t::stringToType("parent-node-stub");
+    }
+
+    child_pointer_t first ()
+    {
+        return parent_t::mFirst;
+    }
+
+    child_pointer_t last ()
+    {
+        return parent_t::mLast;
+    }
+
+    template <class classT = child_t>
+    iterator<classT> push_front(const child_t& val)
+    {
+        return parent_t::push_front(val);
+    }
+
+    template <class classT = child_t>
+    iterator<classT> push_back(const child_t& val)
+    {
+        return parent_t::push_back(val);
+    }
+
+    int id() const { return mId; }
+
+private:
+    parent_node_stub(int id)
+    :
+        parent_t(),
+        mId(id)
+    {}
+
+    const int mId;
+
+    static int sIdCreator;
 };
 
+template <typename charT>
+int parent_node_stub<charT>::sIdCreator = 0;
 
 #endif /* PARENT_NODE_STUB_H_INCLUDED */

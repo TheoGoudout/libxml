@@ -677,7 +677,7 @@ namespace xml {
          *  Removes all elements and destroy them.
          */
         void clear() noexcept;
-    private:
+    protected:
         child_pointer_t mFirst; //!< A pointer to the first element.
         child_pointer_t mLast;  //!< A pointer to the last element.
     };
