@@ -104,6 +104,7 @@ if(DOXYGEN_FOUND)
         ${XML_INCLUDE_DIR}/parent-node.h
         ${XML_INCLUDE_DIR}/child-node.h
         ${XML_INCLUDE_DIR}/node.h
+        ${XML_INCLUDE_DIR}/iterator.h
         ${XML_INCLUDE_DIR}/document.h
         ${XML_INCLUDE_DIR}/element.h
         ${XML_INCLUDE_DIR}/attribute.h

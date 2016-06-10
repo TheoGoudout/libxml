@@ -15,20 +15,17 @@ public:
     typedef typename parent_t::child_pointer_t     child_pointer_t;   //!< Pointer to \c child_t.
     typedef typename parent_t::child_reference_t   child_reference_t; //!< Reference to \c child_t.
 
-    template <class classT>
-    using basic_iterator = xml::basic_parent_node<charT>::basic_iterator<classT>;
+    template <class classT = child_t>
+    using iterator = xml::basic_parent_node<charT>::iterator<classT>;
 
     template <class classT = child_t>
-    using iterator = basic_iterator<classT>;
+    using const_iterator = xml::basic_parent_node<charT>::const_iterator<classT>;
 
     template <class classT = child_t>
-    using const_iterator = basic_iterator<const classT>;
+    using reverse_iterator = xml::basic_parent_node<charT>::reverse_iterator<classT>;
 
     template <class classT = child_t>
-    using reverse_iterator = std::reverse_iterator<iterator<classT> >;
-
-    template <class classT = child_t>
-    using const_reverse_iterator = std::reverse_iterator<const_iterator<classT> >;
+    using const_reverse_iterator = xml::basic_parent_node<charT>::const_reverse_iterator<classT>;
 
     parent_node_stub()
     :

@@ -24,6 +24,7 @@ set(XML_HEADER_FILES
     include/parent-node.h
     include/child-node.h
     include/node.h
+    include/iterator.h
     include/document.h
     include/element.h
     include/attribute.h

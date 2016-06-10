@@ -7,6 +7,9 @@ namespace xml {
     template <typename charT>
     class basic_parent_node;
 
+    template <typename charT, class classT>
+    class basic_iterator;
+
     //! \brief An abstract XML node that has a parent and siblings.
     /*!
      *  This class represents an abstract XML node that has a parent
@@ -78,6 +81,9 @@ namespace xml {
 
         child_pointer_t mPrevious; //!< A pointer to the current previous node sibling. Might be \c null
         child_pointer_t mNext;     //!< A pointer to the current next node sibling. Might be \c null
+
+        template <typename charU, class classT>
+        friend class xml::basic_iterator;
 
         friend class basic_parent_node<charT>;
     };
