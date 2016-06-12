@@ -71,12 +71,17 @@ if(CPPUNIT_FOUND)
         # Register the unit test
         add_test(NAME ${TEST_TARGET} COMMAND ${TEST_TARGET})
 
-        # Add custom target to run unit tests during build
-        add_custom_target(${TEST_TARGET}.stamp ALL
+        # Add custom command to generate stamp file
+        add_custom_command(OUTPUT ${TEST_TARGET}.stamp
             COMMAND ${TEST_TARGET}
             COMMAND ${CMAKE_COMMAND} -E touch "${TEST_TARGET}.stamp"
             WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
             DEPENDS ${TEST_TARGET}
+        )
+
+        # Add custom target to run unit tests during build
+        add_custom_target(${TEST_TARGET}.stamp ALL
+            DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/${TEST_TARGET}.stamp
         )
 
     endforeach()
