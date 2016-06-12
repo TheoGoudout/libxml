@@ -16,16 +16,16 @@ public:
     typedef typename parent_t::child_reference_t   child_reference_t; //!< Reference to \c child_t.
 
     template <class classT = child_t>
-    using iterator = xml::basic_parent_node<charT>::iterator<classT>;
+    using iterator = typename parent_t::template iterator<classT>;
 
     template <class classT = child_t>
-    using const_iterator = xml::basic_parent_node<charT>::const_iterator<classT>;
+    using const_iterator = typename parent_t::template const_iterator<classT>;
 
     template <class classT = child_t>
-    using reverse_iterator = xml::basic_parent_node<charT>::reverse_iterator<classT>;
+    using reverse_iterator = typename parent_t::template reverse_iterator<classT>;
 
     template <class classT = child_t>
-    using const_reverse_iterator = xml::basic_parent_node<charT>::const_reverse_iterator<classT>;
+    using const_reverse_iterator = typename parent_t::template const_reverse_iterator<classT>;
 
     parent_node_stub()
     :
