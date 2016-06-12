@@ -68,6 +68,12 @@ namespace xml {
         virtual ~basic_iterator()
         {}
 
+        template <class classU>
+        operator basic_iterator<charT, classU> () const
+        {
+            return basic_iterator<charT, classU>(mPtr);
+        }
+
         //! \brief A \c basic_iterator copy-assignment operator.
         /*!
          *  Make the current item a copy of \c rhs.

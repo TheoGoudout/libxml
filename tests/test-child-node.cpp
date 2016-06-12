@@ -11,14 +11,14 @@ class test_child_node : public CppUnit::TestFixture
     CPPUNIT_TEST_SUITE_END();
 
 public:
-    typedef parent_node_stub<charT> parent_node_t;
-    typedef child_node_stub<charT>  child_node_t;
+    typedef parent_node_stub<charT> parent_t;
+    typedef child_node_stub<charT>  child_t;
 
     void test_constructor()
     {
         // Default constructor
         {
-            child_node_t child;
+            child_t child;
 
             CPPUNIT_ASSERT(child.parent()   == nullptr);
             CPPUNIT_ASSERT(child.previous() == nullptr);
@@ -27,8 +27,8 @@ public:
 
         // Internal constructor
         {
-            parent_node_t parent;
-            child_node_t child(&parent);
+            parent_t parent;
+            child_t child(&parent);
 
             CPPUNIT_ASSERT(child.parent()   == &parent);
             CPPUNIT_ASSERT(child.previous() == nullptr);
