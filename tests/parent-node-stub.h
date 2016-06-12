@@ -40,12 +40,12 @@ public:
         return node_interface_t::stringToType("parent-node-stub");
     }
 
-    child_pointer_t first ()
+    child_pointer_t& first ()
     {
         return parent_t::mFirst;
     }
 
-    child_pointer_t last ()
+    child_pointer_t& last ()
     {
         return parent_t::mLast;
     }

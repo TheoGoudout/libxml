@@ -8,6 +8,7 @@ class test_parent_node : public CppUnit::TestFixture
 {
     CPPUNIT_TEST_SUITE( test_parent_node );
     CPPUNIT_TEST( test_constructor );
+    CPPUNIT_TEST( test_destructor );
     CPPUNIT_TEST( test_push_front );
     CPPUNIT_TEST( test_push_back );
     CPPUNIT_TEST_SUITE_END();
@@ -27,6 +28,20 @@ public:
         }
     }
 
+    void test_destructor()
+    {
+        // Default destructor
+        {
+            parent_node_t parent;
+
+            CPPUNIT_ASSERT(child_node_t::objectNumber() == 0);
+            parent.first() = parent.last() = new child_node_t(&parent);
+            CPPUNIT_ASSERT(child_node_t::objectNumber() == 1);
+        }
+        CPPUNIT_ASSERT(child_node_t::objectNumber() == 0);
+
+    }
+
     void test_push_front()
     {
         parent_node_t parent;
@@ -34,6 +49,7 @@ public:
         child_node_t child2;
         child_node_t child3;
 
+        // Add one element
         {
             parent.push_front(child1);
 
@@ -49,6 +65,7 @@ public:
             CPPUNIT_ASSERT_EQUAL(last->id() , child1.id());
         }
 
+        // Add two elements
         {
             parent.push_front(child2);
 
@@ -64,6 +81,7 @@ public:
             CPPUNIT_ASSERT_EQUAL(last->id() , child1.id());
         }
 
+        // Add three elements
         {
             parent.push_front(child3);
 
@@ -91,6 +109,7 @@ public:
         child_node_t child2;
         child_node_t child3;
 
+        // Add one element
         {
             parent.push_back(child1);
 
@@ -106,6 +125,7 @@ public:
             CPPUNIT_ASSERT_EQUAL(last->id() , child1.id());
         }
 
+        // Add two elements
         {
             parent.push_back(child2);
 
@@ -121,6 +141,7 @@ public:
             CPPUNIT_ASSERT_EQUAL(last->id() , child2.id());
         }
 
+        // Add three elements
         {
             parent.push_back(child3);
 

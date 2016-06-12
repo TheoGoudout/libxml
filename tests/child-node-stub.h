@@ -22,9 +22,14 @@ public:
     :
         child_t(parent),
         mId(sIdCreator++)
-    {}
+    {
+        ++sObjectNumber;
+    }
 
-    virtual ~child_node_stub() {}
+    virtual ~child_node_stub()
+    {
+        --sObjectNumber;
+    }
 
     virtual type_t type () const
     {
@@ -57,22 +62,36 @@ public:
         return child_t::mNext;
     }
 
-    int id() const { return mId; }
+    int id() const
+    {
+        return mId;
+    }
+
+    static int objectNumber ()
+    {
+        return sObjectNumber;
+    }
 
 private:
     child_node_stub(int id, parent_pointer_t parent = nullptr)
     :
         child_t(parent),
         mId(id)
-    {}
+    {
+        ++sObjectNumber;
+    }
 
     const int mId;
 
     static int sIdCreator;
+    static int sObjectNumber;
 };
 
 template <typename charT>
 int child_node_stub<charT>::sIdCreator = 0;
+
+template <typename charT>
+int child_node_stub<charT>::sObjectNumber = 0;
 
 
 #endif /* CHILD_NODE_STUB_H_INCLUDED */
