@@ -5,6 +5,7 @@
 - [ ] Support DDT validation
 - [ ] Support XSD validation
 - [ ] Support XSLT transformation
+- [ ] Support Xpath
 
 ### XML features
 
