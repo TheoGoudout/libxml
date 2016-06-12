@@ -68,6 +68,12 @@ namespace xml {
         virtual ~basic_iterator()
         {}
 
+        //! \brief An implicit conversion function.
+        /*!
+         *  This function converts iterators from one type to another.
+         *
+         *  \return The \c basic_iterator with a new type.
+         */
         template <class classU>
         operator basic_iterator<charT, classU> () const
         {

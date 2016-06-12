@@ -85,7 +85,7 @@ namespace xml {
          *  This constructor initialise the internals of a parent node, i.e.
          *  its first and last child node.
          */
-        basic_parent_node()
+        basic_parent_node ()
         :
             node_interface_t(),
             mFirst(nullptr),
@@ -96,7 +96,7 @@ namespace xml {
         /*!
          *  This destructor reset all the internal values.
          */
-        virtual ~basic_parent_node()
+        virtual ~basic_parent_node ()
         {
             clear();
 
@@ -111,7 +111,7 @@ namespace xml {
          *  \tparam classT The type of object to iterate through.
          */
         template <class classT = child_t>
-        iterator<classT> begin() noexcept
+        iterator<classT> begin () noexcept
         {
             return iterator<classT>(mFirst);
         }
@@ -123,7 +123,7 @@ namespace xml {
          *  \tparam classT The type of object to iterate through.
          */
         template <class classT = child_t>
-        const_iterator<classT> begin() const noexcept
+        const_iterator<classT> begin () const noexcept
         {
             return const_iterator<classT>(mFirst);
         }
@@ -135,7 +135,7 @@ namespace xml {
          *  \tparam classT The type of object to iterate through.
          */
         template <class classT = child_t>
-        iterator<classT> end() noexcept
+        iterator<classT> end () noexcept
         {
             return iterator<classT>(nullptr);
         }
@@ -147,7 +147,7 @@ namespace xml {
          *  \tparam classT The type of object to iterate through.
          */
         template <class classT = child_t>
-        const_iterator<classT> end() const noexcept
+        const_iterator<classT> end () const noexcept
         {
             return const_iterator<classT>(nullptr);
         }
@@ -159,7 +159,7 @@ namespace xml {
          *  \tparam classT The type of object to iterate through.
          */
         template <class classT = child_t>
-        reverse_iterator<classT> rbegin() noexcept
+        reverse_iterator<classT> rbegin () noexcept
         {
             return reverse_iterator<classT>(nullptr);
         }
@@ -171,7 +171,7 @@ namespace xml {
          *  \tparam classT The type of object to iterate through.
          */
         template <class classT = child_t>
-        const_reverse_iterator<classT> rbegin() const noexcept
+        const_reverse_iterator<classT> rbegin () const noexcept
         {
             return const_reverse_iterator<classT>(nullptr);
         }
@@ -183,7 +183,7 @@ namespace xml {
          *  \tparam classT The type of object to iterate through.
          */
         template <class classT = child_t>
-        reverse_iterator<classT> rend() noexcept
+        reverse_iterator<classT> rend () noexcept
         {
             return reverse_iterator<classT>(mFirst);
         }
@@ -195,7 +195,7 @@ namespace xml {
          *  \tparam classT The type of object to iterate through.
          */
         template <class classT = child_t>
-        const_reverse_iterator<classT> rend() const noexcept
+        const_reverse_iterator<classT> rend () const noexcept
         {
             return const_reverse_iterator<classT>(mFirst);
         }
@@ -207,7 +207,7 @@ namespace xml {
          *  \tparam classT The type of object to iterate through.
          */
         template <class classT = child_t>
-        const_iterator<classT> cbegin() const noexcept
+        const_iterator<classT> cbegin () const noexcept
         {
             return begin();
         }
@@ -219,7 +219,7 @@ namespace xml {
          *  \tparam classT The type of object to iterate through.
          */
         template <class classT = child_t>
-        const_iterator<classT> cend() const noexcept
+        const_iterator<classT> cend () const noexcept
         {
             return end();
         }
@@ -231,7 +231,7 @@ namespace xml {
          *  \tparam classT The type of object to iterate through.
          */
         template <class classT = child_t>
-        const_reverse_iterator<classT> crbegin() const noexcept
+        const_reverse_iterator<classT> crbegin () const noexcept
         {
             return rbegin();
         }
@@ -243,9 +243,21 @@ namespace xml {
          *  \tparam classT The type of object to iterate through.
          */
         template <class classT = child_t>
-        const_reverse_iterator<classT> crend() const noexcept
+        const_reverse_iterator<classT> crend () const noexcept
         {
             return rend();
+        }
+
+        //! \brief Get the number of children.
+        /*!
+         *  This function returns the number of children this node has.
+         *  It is equivalent to `std::distance(begin(), end());`
+         *
+         *  \return The number of children.
+         */
+        size_t size () const
+        {
+            return std::distance(begin(), end());
         }
 
     protected:
@@ -260,7 +272,7 @@ namespace xml {
          *  \return An \c iterator pointing to the newly inserted element.
          */
         template <class classT = child_t>
-        iterator<classT> insert(const_iterator<classT> position, const child_t& val)
+        iterator<classT> insert (const_iterator<classT> position, const child_t& val)
         {
             return insert(position, val.clone());
         }
@@ -277,7 +289,7 @@ namespace xml {
          *  \return An \c iterator pointing to the first newly inserted element.
          */
         template <class classT = child_t>
-        iterator<classT> insert(const_iterator<classT> position, size_t n, const child_t& val)
+        iterator<classT> insert (const_iterator<classT> position, size_t n, const child_t& val)
         {
             if (n == 0)
                 return iterator<classT>(position.mPtr);
@@ -350,7 +362,7 @@ namespace xml {
          *  \return An \c iterator pointing to the newly inserted element.
          */
         template <class classT = child_t>
-        iterator<classT> push_front(const child_t& val)
+        iterator<classT> push_front (const child_t& val)
         {
             return insert(cbegin(), val);
         }
@@ -365,7 +377,7 @@ namespace xml {
          *  \return An \c iterator pointing to the newly inserted element.
          */
         template <class classT = child_t>
-        iterator<classT> push_front(child_t&& val)
+        iterator<classT> push_front (child_t&& val)
         {
             return insert(cbegin(), std::move(val));
         }
@@ -380,7 +392,7 @@ namespace xml {
          *  \return An \c iterator pointing to the newly inserted element.
          */
         template <class classT = child_t>
-        iterator<classT> push_back(const child_t& val)
+        iterator<classT> push_back (const child_t& val)
         {
             return insert(cend(), val);
         }
@@ -395,7 +407,7 @@ namespace xml {
          *  \return An \c iterator pointing to the newly inserted element.
          */
         template <class classT = child_t>
-        iterator<classT> push_back(child_t&& val)
+        iterator<classT> push_back (child_t&& val)
         {
             return insert(cend(), std::move(val));
         }
@@ -414,7 +426,7 @@ namespace xml {
          *  \return An \c iterator pointing to the newly inserted element.
          */
         template <class classT = child_t, class classU, typename ... Args>
-        iterator<classT> emplace(const_iterator<classT> position, Args&& ... args)
+        iterator<classT> emplace (const_iterator<classT> position, Args&& ... args)
         {
             return insert(position, new classU(std::forward(args ...)));
         }
@@ -432,7 +444,7 @@ namespace xml {
          *  \return An \c iterator pointing to the newly inserted element.
          */
         template <class classT = child_t, class classU, typename ... Args>
-        iterator<classT> emplace_front(Args&& ... args)
+        iterator<classT> emplace_front (Args&& ... args)
         {
             return emplace(cbegin(), std::forward(args ...));
         }
@@ -450,7 +462,7 @@ namespace xml {
          *  \return An \c iterator pointing to the newly inserted element.
          */
         template <class classT = child_t, class classU, typename ... Args>
-        iterator<classT> emplace_back(Args&& ... args)
+        iterator<classT> emplace_back (Args&& ... args)
         {
             return emplace(cend(), std::forward(args ...));
         }
@@ -509,7 +521,7 @@ namespace xml {
         /*!
          *  Removes the first element and destroy it.
          */
-        void pop_front()
+        void pop_front ()
         {
             erase(begin());
         }
@@ -518,7 +530,7 @@ namespace xml {
         /*!
          *  Removes the last element and destroy it.
          */
-        void pop_back()
+        void pop_back ()
         {
             erase(rbegin().base());
         }
@@ -527,7 +539,7 @@ namespace xml {
         /*!
          *  Removes all elements and destroy them.
          */
-        void clear() noexcept
+        void clear () noexcept
         {
             erase(cbegin(), cend());
         }
