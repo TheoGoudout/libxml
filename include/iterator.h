@@ -1,6 +1,8 @@
 #ifndef ITERATOR_H_INCLUDED
 #define ITERATOR_H_INCLUDED
 
+#include <iostream>
+
 #include <parent-node.h>
 #include <child-node.h>
 
@@ -56,7 +58,8 @@ namespace xml {
          *
          *  \param [in] rhs A reference to the \c basic_iterator to copy.
          */
-        basic_iterator(const basic_iterator<charT, classT>& rhs)
+        template<typename classU>
+        basic_iterator(const basic_iterator<charT, classU>& rhs)
         :
             mPtr(rhs.mPtr)
         {}
@@ -68,25 +71,14 @@ namespace xml {
         virtual ~basic_iterator()
         {}
 
-        //! \brief An implicit conversion function.
-        /*!
-         *  This function converts iterators from one type to another.
-         *
-         *  \return The \c basic_iterator with a new type.
-         */
-        template <class classU>
-        operator basic_iterator<charT, classU> () const
-        {
-            return basic_iterator<charT, classU>(mPtr);
-        }
-
         //! \brief A \c basic_iterator copy-assignment operator.
         /*!
          *  Make the current item a copy of \c rhs.
          *
          *  \param [in] rhs A reference to the \c basic_iterator to copy.
          */
-        basic_iterator<charT, classT>& operator=(const basic_iterator<charT, classT>& rhs)
+        template <class classU>
+        basic_iterator<charT, classT>& operator=(const basic_iterator<charT, classU>& rhs)
         {
             mPtr = rhs.mPtr;
             return *this;
@@ -102,7 +94,8 @@ namespace xml {
          *
          *  \sa operator!=()
          */
-        bool operator==(const basic_iterator<charT, classT>& rhs)
+        template <class classU>
+        bool operator==(const basic_iterator<charT, classU>& rhs)
         {
             return mPtr == rhs.mPtr;
         }
@@ -117,7 +110,8 @@ namespace xml {
          *
          *  \sa operator==()
          */
-        bool operator!=(const basic_iterator<charT, classT>& rhs)
+        template <class classU>
+        bool operator!=(const basic_iterator<charT, classU>& rhs)
         {
             return !(*this == rhs);
         }
@@ -188,9 +182,10 @@ namespace xml {
          *  \sa operator++()
          *  \sa operator--(int)
          */
-        basic_iterator<charT, classT>  operator++(int)
+        template <class classU>
+        basic_iterator<charT, classU>  operator++(int)
         {
-            basic_iterator<charT, classT> temp = *this;
+            basic_iterator<charT, classU> temp = *this;
             ++(*this);
             return temp;
         }
@@ -205,9 +200,10 @@ namespace xml {
          *  \sa operator--()
          *  \sa operator++(int)
          */
-        basic_iterator<charT, classT>  operator--(int)
+        template <class classU>
+        basic_iterator<charT, classU>  operator--(int)
         {
-            basic_iterator<charT, classT> temp = *this;
+            basic_iterator<charT, classU> temp = *this;
             --(*this);
             return temp;
         }
@@ -260,6 +256,9 @@ namespace xml {
         child_pointer_t mPtr; //!< A pointer to the current item this \c basic_iterator points to.
 
         friend class basic_parent_node<charT>;
+
+        template <typename charU, class classU>
+        friend class basic_iterator;
     };
 }
 

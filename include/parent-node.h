@@ -257,7 +257,7 @@ namespace xml {
          */
         size_t size () const
         {
-            return std::distance(begin(), end());
+            return std::distance(cbegin(), cend());
         }
 
     protected:
@@ -294,7 +294,9 @@ namespace xml {
             if (n == 0)
                 return iterator<classT>(position.mPtr);
 
-            return insert(insert(position, n - 1, val), val);
+            const_iterator<classT> it = insert(position, n - 1, val);
+
+            return insert(it, val);
         }
 
         //! \brief Copy a set of \c child_t into the inserted elements.
@@ -317,7 +319,9 @@ namespace xml {
             if (first == last)
                 return iterator<classT>(position.mPtr);
 
-            return insert(insert(position, first++, last), *first);
+            const_iterator<classT> it = insert(position, first++, last);
+
+            return insert(it, *first);
         }
 
         //! \brief Move a \c child_t into the inserted elements.
@@ -513,8 +517,9 @@ namespace xml {
             if (first == last)
                 return last;
 
-            erase(first);
-            return erase(++first, last);
+            const_iterator<classT> it = erase(first);
+
+            return erase(it, last);
         }
 
         //! \brief Delete first element.
