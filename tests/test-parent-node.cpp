@@ -45,7 +45,7 @@ public:
 
     void test_insert()
     {
-        // Test basic_parent_node::insert(const_iterator, child_t&)
+        // Test basic_parent_node::insert(iterator, child_t&)
         {
             parent_t parent;
             child_t child1;
@@ -109,7 +109,7 @@ public:
         }
         CPPUNIT_ASSERT_EQUAL(0, child_t::objectNumber());
 
-        // Test basic_parent_node::insert(const_iterator, size_t, child_t&)
+        // Test basic_parent_node::insert(iterator, size_t, child_t&)
         {
             parent_t parent;
             child_t child;
@@ -137,6 +137,37 @@ public:
             }
         }
         CPPUNIT_ASSERT_EQUAL(0, child_t::objectNumber());
+
+        // Test basic_parent_node::insert (iterator, InputIterator, InputIterator)
+        {
+            child_t child;
+            parent_t dummy;
+            dummy.insert(dummy.begin(), 3, child);
+
+            parent_t parent;
+
+            {
+                CPPUNIT_ASSERT_EQUAL(4, child_t::objectNumber());
+                parent.insert(parent.begin(), dummy.begin(), dummy.end());
+                CPPUNIT_ASSERT_EQUAL(7, child_t::objectNumber());
+                CPPUNIT_ASSERT(parent.size() == 3);
+
+                child_t* first  = static_cast<child_t*>(parent.first());
+                child_t* second = static_cast<child_t*>(first->next());
+                child_t* last   = static_cast<child_t*>(parent.last());
+
+                CPPUNIT_ASSERT(first  != nullptr);
+                CPPUNIT_ASSERT(first  != &child);
+                CPPUNIT_ASSERT(second != nullptr);
+                CPPUNIT_ASSERT(second != &child);
+                CPPUNIT_ASSERT(last   != nullptr);
+                CPPUNIT_ASSERT(last   != &child);
+
+                CPPUNIT_ASSERT_EQUAL(first->id() , child.id());
+                CPPUNIT_ASSERT_EQUAL(second->id(), child.id());
+                CPPUNIT_ASSERT_EQUAL(last->id()  , child.id());
+            }
+        }
     }
 
     void test_push_front()

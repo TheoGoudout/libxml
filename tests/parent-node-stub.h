@@ -62,6 +62,12 @@ public:
         return parent_t::insert(position, n, val);
     }
 
+    template <class InputIterator, class classT = child_t>
+    iterator<classT> insert (iterator<classT> position, InputIterator first, InputIterator last)
+    {
+        return parent_t::insert(position, first, last);
+    }
+
     template <class classT = child_t>
     iterator<classT> push_front(const child_t& val)
     {

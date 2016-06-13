@@ -292,7 +292,7 @@ namespace xml {
         iterator<classT> insert (iterator<classT> position, size_t n, const child_t& val)
         {
             if (n == 0)
-                return iterator<classT>(position.mPtr);
+                return position;
 
             return insert(insert(position, n - 1, val), val);
         }
@@ -315,9 +315,9 @@ namespace xml {
         iterator<classT> insert (iterator<classT> position, InputIterator first, InputIterator last)
         {
             if (first == last)
-                return iterator<classT>(position.mPtr);
+                return position;
 
-            return insert(insert(position, first++, last), *first);
+            return insert(insert(position, ++first, last), *first);
         }
 
         //! \brief Move a \c child_t into the inserted elements.
