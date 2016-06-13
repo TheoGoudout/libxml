@@ -51,13 +51,13 @@ public:
     }
 
     template <class classT = child_t>
-    iterator<classT> insert(const_iterator<classT> position, const child_t& val)
+    iterator<classT> insert(iterator<classT> position, const child_t& val)
     {
         return parent_t::insert(position, val);
     }
 
     template <class classT = child_t>
-    iterator<classT> insert(const_iterator<classT> position, size_t n, const child_t& val)
+    iterator<classT> insert(iterator<classT> position, size_t n, const child_t& val)
     {
         return parent_t::insert(position, n, val);
     }

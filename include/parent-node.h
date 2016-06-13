@@ -272,7 +272,7 @@ namespace xml {
          *  \return An \c iterator pointing to the newly inserted element.
          */
         template <class classT = child_t>
-        iterator<classT> insert (const_iterator<classT> position, const child_t& val)
+        iterator<classT> insert (iterator<classT> position, const child_t& val)
         {
             return insert(position, val.clone());
         }
@@ -289,14 +289,12 @@ namespace xml {
          *  \return An \c iterator pointing to the first newly inserted element.
          */
         template <class classT = child_t>
-        iterator<classT> insert (const_iterator<classT> position, size_t n, const child_t& val)
+        iterator<classT> insert (iterator<classT> position, size_t n, const child_t& val)
         {
             if (n == 0)
                 return iterator<classT>(position.mPtr);
 
-            const_iterator<classT> it = insert(position, n - 1, val);
-
-            return insert(it, val);
+            return insert(insert(position, n - 1, val), val);
         }
 
         //! \brief Copy a set of \c child_t into the inserted elements.
@@ -314,14 +312,12 @@ namespace xml {
          *  \return An \c iterator pointing to the first newly inserted element.
          */
         template <class InputIterator, class classT = child_t>
-        iterator<classT> insert (const_iterator<classT> position, InputIterator first, InputIterator last)
+        iterator<classT> insert (iterator<classT> position, InputIterator first, InputIterator last)
         {
             if (first == last)
                 return iterator<classT>(position.mPtr);
 
-            const_iterator<classT> it = insert(position, first++, last);
-
-            return insert(it, *first);
+            return insert(insert(position, first++, last), *first);
         }
 
         //! \brief Move a \c child_t into the inserted elements.
@@ -335,7 +331,7 @@ namespace xml {
          *  \return An \c iterator pointing to the first newly inserted element.
          */
         template <class classT = child_t>
-        iterator<classT> insert (const_iterator<classT> position, child_t&& val)
+        iterator<classT> insert (iterator<classT> position, child_t&& val)
         {
             return insert(position, val.clone(std::move(val)));
         }
@@ -351,7 +347,7 @@ namespace xml {
          *  \return An \c iterator pointing to the first newly inserted element.
          */
         template <class classT = child_t>
-        iterator<classT> insert (const_iterator<classT> position, std::initializer_list<child_t> il)
+        iterator<classT> insert (iterator<classT> position, std::initializer_list<child_t> il)
         {
             return insert(position, il.begin(), il.end());
         }
@@ -430,7 +426,7 @@ namespace xml {
          *  \return An \c iterator pointing to the newly inserted element.
          */
         template <class classT = child_t, class classU, typename ... Args>
-        iterator<classT> emplace (const_iterator<classT> position, Args&& ... args)
+        iterator<classT> emplace (iterator<classT> position, Args&& ... args)
         {
             return insert(position, new classU(std::forward(args ...)));
         }
@@ -517,9 +513,7 @@ namespace xml {
             if (first == last)
                 return last;
 
-            const_iterator<classT> it = erase(first);
-
-            return erase(it, last);
+            return erase(erase(first), last);
         }
 
         //! \brief Delete first element.
@@ -561,7 +555,7 @@ namespace xml {
          *  \return An \c iterator pointing to the newly inserted element.
          */
         template <class classT = child_t>
-        iterator<classT> insert (const_iterator<classT> position, child_pointer_t ptr)
+        iterator<classT> insert (iterator<classT> position, child_pointer_t ptr)
         {
             child_pointer_t after = position.mPtr;
             child_pointer_t before = after == nullptr ? mLast : after->mPrevious;

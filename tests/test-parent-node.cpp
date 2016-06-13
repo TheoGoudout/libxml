@@ -54,7 +54,7 @@ public:
 
             {
                 CPPUNIT_ASSERT_EQUAL(3, child_t::objectNumber());
-                parent.insert(parent.cbegin(), child1);
+                parent.insert(parent.begin(), child1);
                 CPPUNIT_ASSERT_EQUAL(4, child_t::objectNumber());
 
                 child_t* first = static_cast<child_t*>(parent.first());
@@ -71,7 +71,7 @@ public:
 
             {
                 CPPUNIT_ASSERT_EQUAL(4, child_t::objectNumber());
-                parent.insert(parent.cend(), child2);
+                parent.insert(parent.end(), child2);
                 CPPUNIT_ASSERT_EQUAL(5, child_t::objectNumber());
 
                 child_t* first = static_cast<child_t*>(parent.first());
@@ -88,7 +88,7 @@ public:
 
             {
                 CPPUNIT_ASSERT_EQUAL(5, child_t::objectNumber());
-                parent.insert(++(parent.cbegin()), child3);
+                parent.insert(++(parent.begin()), child3);
                 CPPUNIT_ASSERT_EQUAL(6, child_t::objectNumber());
 
                 child_t* first  = static_cast<child_t*>(parent.first());
@@ -116,15 +116,24 @@ public:
 
             {
                 CPPUNIT_ASSERT_EQUAL(1, child_t::objectNumber());
-                parent.insert(parent.cbegin(), 3, child);
+                parent.insert(parent.begin(), 3, child);
                 CPPUNIT_ASSERT_EQUAL(4, child_t::objectNumber());
                 CPPUNIT_ASSERT(parent.size() == 3);
 
-                typename parent_t::template const_iterator<child_t> it = parent.cbegin();
-                for (; it != parent.cend(); ++it)
-                {
-                    CPPUNIT_ASSERT_EQUAL(it->id(), child.id());
-                }
+                child_t* first  = static_cast<child_t*>(parent.first());
+                child_t* second = static_cast<child_t*>(first->next());
+                child_t* last   = static_cast<child_t*>(parent.last());
+
+                CPPUNIT_ASSERT(first  != nullptr);
+                CPPUNIT_ASSERT(first  != &child);
+                CPPUNIT_ASSERT(second != nullptr);
+                CPPUNIT_ASSERT(second != &child);
+                CPPUNIT_ASSERT(last   != nullptr);
+                CPPUNIT_ASSERT(last   != &child);
+
+                CPPUNIT_ASSERT_EQUAL(first->id() , child.id());
+                CPPUNIT_ASSERT_EQUAL(second->id(), child.id());
+                CPPUNIT_ASSERT_EQUAL(last->id()  , child.id());
             }
         }
         CPPUNIT_ASSERT_EQUAL(0, child_t::objectNumber());
