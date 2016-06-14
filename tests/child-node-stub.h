@@ -26,6 +26,14 @@ public:
         ++sObjectNumber;
     }
 
+    child_node_stub(const child_node_stub<charT>& rhs)
+    :
+        child_t(rhs.mParent),
+        mId(rhs.mId)
+    {
+        ++sObjectNumber;
+    }
+
     virtual ~child_node_stub()
     {
         --sObjectNumber;

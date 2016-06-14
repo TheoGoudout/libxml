@@ -68,6 +68,12 @@ public:
         return parent_t::insert(position, first, last);
     }
 
+    template <class classT = child_t, class classU>
+    iterator<classT> insert (iterator<classT> position, std::initializer_list<classU> il)
+    {
+        return parent_t::insert(position, il);
+    }
+
     template <class classT = child_t>
     iterator<classT> push_front(const child_t& val)
     {

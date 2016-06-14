@@ -168,6 +168,38 @@ public:
                 CPPUNIT_ASSERT_EQUAL(last->id()  , child.id());
             }
         }
+        CPPUNIT_ASSERT_EQUAL(0, child_t::objectNumber());
+
+        // Test basic_parent_node::insert (iterator, std::initializer_list<child_t>)
+        {
+            parent_t parent;
+            child_t child1;
+            child_t child2;
+            child_t child3;
+
+            {
+                CPPUNIT_ASSERT_EQUAL(3, child_t::objectNumber());
+                parent.insert(parent.begin(), { child1, child2, child3 });
+                CPPUNIT_ASSERT_EQUAL(6, child_t::objectNumber());
+                CPPUNIT_ASSERT(parent.size() == 3);
+
+                child_t* first  = static_cast<child_t*>(parent.first());
+                child_t* second = static_cast<child_t*>(first->next());
+                child_t* last   = static_cast<child_t*>(parent.last());
+
+                CPPUNIT_ASSERT(first  != nullptr);
+                CPPUNIT_ASSERT(first  != &child1);
+                CPPUNIT_ASSERT(second != nullptr);
+                CPPUNIT_ASSERT(second != &child2);
+                CPPUNIT_ASSERT(last   != nullptr);
+                CPPUNIT_ASSERT(last   != &child3);
+
+                CPPUNIT_ASSERT_EQUAL(first->id() , child1.id());
+                CPPUNIT_ASSERT_EQUAL(second->id(), child2.id());
+                CPPUNIT_ASSERT_EQUAL(last->id()  , child3.id());
+            }
+        }
+        CPPUNIT_ASSERT_EQUAL(0, child_t::objectNumber());
     }
 
     void test_push_front()

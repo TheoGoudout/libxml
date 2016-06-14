@@ -317,7 +317,9 @@ namespace xml {
             if (first == last)
                 return position;
 
-            return insert(insert(position, ++first, last), *first);
+            auto it = first->clone();
+
+            return insert(insert(position, ++first, last), it);
         }
 
         //! \brief Move a \c child_t into the inserted elements.
@@ -346,8 +348,8 @@ namespace xml {
          *
          *  \return An \c iterator pointing to the first newly inserted element.
          */
-        template <class classT = child_t>
-        iterator<classT> insert (iterator<classT> position, std::initializer_list<child_t> il)
+        template <class classT = child_t, class classU>
+        iterator<classT> insert (iterator<classT> position, std::initializer_list<classU> il)
         {
             return insert(position, il.begin(), il.end());
         }
