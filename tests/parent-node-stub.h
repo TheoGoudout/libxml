@@ -110,6 +110,18 @@ public:
         return parent_t::template emplace<classU>(position, std::forward<Args>(args) ...);
     }
 
+    template <class classU, typename ... Args, class classT = child_t>
+    iterator<classT> emplace_front (Args&& ... args)
+    {
+        return parent_t::template emplace_front<classU>(std::forward<Args>(args) ...);
+    }
+
+    template <class classU, typename ... Args, class classT = child_t>
+    iterator<classT> emplace_back (Args&& ... args)
+    {
+        return parent_t::template emplace_back<classU>(std::forward<Args>(args) ...);
+    }
+
     int id() const { return mId; }
 
 private:
