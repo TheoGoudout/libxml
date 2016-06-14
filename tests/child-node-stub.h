@@ -21,7 +21,11 @@ public:
     child_node_stub(parent_pointer_t parent = nullptr)
     :
         child_t(parent),
-        mId(sIdCreator++)
+        mId(sIdCreator++),
+        mCopyConstructed(false),
+        mNumCopy(0),
+        mMoveConstructed(false),
+        mHasBeenMoved(false)
     {
         ++sObjectNumber;
     }
@@ -29,14 +33,32 @@ public:
     child_node_stub(const child_node_stub<charT>& rhs)
     :
         child_t(rhs.mParent),
-        mId(rhs.mId)
+        mId(rhs.mId),
+        mCopyConstructed(true),
+        mNumCopy(0),
+        mMoveConstructed(false),
+        mHasBeenMoved(false)
     {
+        rhs.mNumCopy++;
         ++sObjectNumber;
+    }
+
+    child_node_stub(child_node_stub<charT>&& rhs)
+    :
+        child_t(rhs),
+        mId(rhs.mId),
+        mCopyConstructed(false),
+        mNumCopy(0),
+        mMoveConstructed(true),
+        mHasBeenMoved(false)
+    {
+        rhs.mHasBeenMoved = true;
     }
 
     virtual ~child_node_stub()
     {
-        --sObjectNumber;
+        if (!mHasBeenMoved)
+            --sObjectNumber;
     }
 
     virtual type_t type () const
@@ -46,13 +68,12 @@ public:
 
     virtual child_pointer_t clone() const
     {
-        return new child_node_stub<charT>(mId);
+        return new child_node_stub<charT>(*this);
     }
 
     virtual child_pointer_t clone(child_move_t rhs) const
     {
-        const int id = static_cast<child_node_stub<charT>&&>(rhs).mId;
-        return new child_node_stub<charT>(id);
+        return new child_node_stub<charT>(static_cast<child_node_stub<charT>&&>(rhs));
     }
 
     parent_pointer_t parent()
@@ -75,21 +96,39 @@ public:
         return mId;
     }
 
+    bool copyConstructed() const
+    {
+        return mCopyConstructed;
+    }
+
+    int numCopy() const
+    {
+        return mNumCopy;
+    }
+
+    bool moveConstructed() const
+    {
+        return mMoveConstructed;
+    }
+
+    bool hasBeenMoved() const
+    {
+        return mHasBeenMoved;
+    }
+
     static int objectNumber ()
     {
         return sObjectNumber;
     }
 
 private:
-    child_node_stub(int id, parent_pointer_t parent = nullptr)
-    :
-        child_t(parent),
-        mId(id)
-    {
-        ++sObjectNumber;
-    }
-
     const int mId;
+
+    mutable bool mCopyConstructed; // Whether this element is constructed from a copy
+    mutable int  mNumCopy;         // How many times this element has been copied
+
+    mutable bool mMoveConstructed; // Whether this element is constructed from a move
+    mutable bool mHasBeenMoved;    // Whether this element has been moved
 
     static int sIdCreator;
     static int sObjectNumber;

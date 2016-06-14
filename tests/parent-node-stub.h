@@ -68,6 +68,12 @@ public:
         return parent_t::insert(position, first, last);
     }
 
+    template <class classT = child_t>
+    iterator<classT> insert(iterator<classT> position, child_t&& val)
+    {
+        return parent_t::insert(position, std::move(val));
+    }
+
     template <class classT = child_t, class classU>
     iterator<classT> insert (iterator<classT> position, std::initializer_list<classU> il)
     {
@@ -81,9 +87,21 @@ public:
     }
 
     template <class classT = child_t>
+    iterator<classT> push_front(child_t&& val)
+    {
+        return parent_t::push_front(std::move(val));
+    }
+
+    template <class classT = child_t>
     iterator<classT> push_back(const child_t& val)
     {
         return parent_t::push_back(val);
+    }
+
+    template <class classT = child_t>
+    iterator<classT> push_back(child_t&& val)
+    {
+        return parent_t::push_back(std::move(val));
     }
 
     int id() const { return mId; }
