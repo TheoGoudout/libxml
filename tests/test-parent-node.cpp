@@ -18,6 +18,7 @@ class test_parent_node : public CppUnit::TestFixture
     CPPUNIT_TEST( test_push_front_move );
     CPPUNIT_TEST( test_push_back_single_element );
     CPPUNIT_TEST( test_push_back_move );
+    CPPUNIT_TEST( test_emplace );
     CPPUNIT_TEST_SUITE_END();
 
 public:
@@ -764,6 +765,97 @@ public:
 
                 CPPUNIT_ASSERT(last->moveConstructed());
                 CPPUNIT_ASSERT(last->id() == id1);
+            }
+        }
+        CPPUNIT_ASSERT_EQUAL(0, child_t::objectNumber());
+    }
+
+    void test_emplace()
+    {
+        {
+            parent_t parent;
+
+            {
+                CPPUNIT_ASSERT_EQUAL(0, child_t::objectNumber());
+                parent.template emplace<child_t>(parent.begin(), (parent_t*)0xdeadbeef);
+                CPPUNIT_ASSERT_EQUAL(1, child_t::objectNumber());
+                CPPUNIT_ASSERT(parent.size() == 1);
+
+
+                child_t* first = static_cast<child_t*>(parent.first());
+                child_t* last  = static_cast<child_t*>(parent.last());
+
+
+                CPPUNIT_ASSERT(first             == last);
+                CPPUNIT_ASSERT(first->parent()   == &parent);
+                CPPUNIT_ASSERT(first->previous() == nullptr);
+                CPPUNIT_ASSERT(first->next()     == nullptr);
+
+                CPPUNIT_ASSERT(!first->copyConstructed());
+                CPPUNIT_ASSERT(!first->moveConstructed());
+            }
+
+            {
+                CPPUNIT_ASSERT_EQUAL(1, child_t::objectNumber());
+                parent.template emplace<child_t>(parent.end(), (parent_t*)0xdeadbeef);
+                CPPUNIT_ASSERT_EQUAL(2, child_t::objectNumber());
+                CPPUNIT_ASSERT(parent.size() == 2);
+
+
+                child_t* first = static_cast<child_t*>(parent.first());
+                child_t* last  = static_cast<child_t*>(parent.last());
+
+
+                CPPUNIT_ASSERT(first->parent()   == &parent);
+                CPPUNIT_ASSERT(first->previous() == nullptr);
+                CPPUNIT_ASSERT(first->next()     == last);
+
+                CPPUNIT_ASSERT(!first->copyConstructed());
+                CPPUNIT_ASSERT(!first->moveConstructed());
+
+
+                CPPUNIT_ASSERT(last->parent()   == &parent);
+                CPPUNIT_ASSERT(last->previous() == first);
+                CPPUNIT_ASSERT(last->next()     == nullptr);
+
+                CPPUNIT_ASSERT(!last->copyConstructed());
+                CPPUNIT_ASSERT(!last->moveConstructed());
+            }
+
+            {
+                CPPUNIT_ASSERT_EQUAL(2, child_t::objectNumber());
+                parent.template emplace<child_t>(++(parent.begin()), (parent_t*)0xdeadbeef);
+                CPPUNIT_ASSERT_EQUAL(3, child_t::objectNumber());
+                CPPUNIT_ASSERT(parent.size() == 3);
+
+
+                child_t* first  = static_cast<child_t*>(parent.first());
+                child_t* second = static_cast<child_t*>(first->next());
+                child_t* last   = static_cast<child_t*>(parent.last());
+
+
+                CPPUNIT_ASSERT(first->parent()   == &parent);
+                CPPUNIT_ASSERT(first->previous() == nullptr);
+                CPPUNIT_ASSERT(first->next()     == second);
+
+                CPPUNIT_ASSERT(!first->copyConstructed());
+                CPPUNIT_ASSERT(!first->moveConstructed());
+
+
+                CPPUNIT_ASSERT(second->parent()   == &parent);
+                CPPUNIT_ASSERT(second->previous() == first);
+                CPPUNIT_ASSERT(second->next()     == last);
+
+                CPPUNIT_ASSERT(!second->copyConstructed());
+                CPPUNIT_ASSERT(!second->moveConstructed());
+
+
+                CPPUNIT_ASSERT(last->parent()   == &parent);
+                CPPUNIT_ASSERT(last->previous() == second);
+                CPPUNIT_ASSERT(last->next()     == nullptr);
+
+                CPPUNIT_ASSERT(!last->copyConstructed());
+                CPPUNIT_ASSERT(!last->moveConstructed());
             }
         }
         CPPUNIT_ASSERT_EQUAL(0, child_t::objectNumber());

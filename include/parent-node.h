@@ -427,10 +427,10 @@ namespace xml {
          *
          *  \return An \c iterator pointing to the newly inserted element.
          */
-        template <class classT = child_t, class classU, typename ... Args>
+        template <class classU, typename ... Args, class classT = child_t>
         iterator<classT> emplace (iterator<classT> position, Args&& ... args)
         {
-            return insert(position, new classU(std::forward(args ...)));
+            return insert(position, new classU(std::forward<Args>(args) ...));
         }
 
         //! \brief Allocate a \c child_t and insert it before the first element.
@@ -445,10 +445,10 @@ namespace xml {
          *
          *  \return An \c iterator pointing to the newly inserted element.
          */
-        template <class classT = child_t, class classU, typename ... Args>
+        template <class classU, typename ... Args, class classT = child_t>
         iterator<classT> emplace_front (Args&& ... args)
         {
-            return emplace(cbegin(), std::forward(args ...));
+            return emplace<classU>(cbegin(), std::forward<Args>(args) ...);
         }
 
         //! \brief Allocate a \c child_t and insert it after the last element.
@@ -463,10 +463,10 @@ namespace xml {
          *
          *  \return An \c iterator pointing to the newly inserted element.
          */
-        template <class classT = child_t, class classU, typename ... Args>
+        template <class classU, typename ... Args, class classT = child_t>
         iterator<classT> emplace_back (Args&& ... args)
         {
-            return emplace(cend(), std::forward(args ...));
+            return emplace<classU>(cend(), std::forward<Args>(args) ...);
         }
 
         //! \brief Erase element.

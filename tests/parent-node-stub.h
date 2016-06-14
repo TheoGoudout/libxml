@@ -104,6 +104,12 @@ public:
         return parent_t::push_back(std::move(val));
     }
 
+    template <class classU, typename ... Args, class classT = child_t>
+    iterator<classT> emplace (iterator<classT> position, Args&& ... args)
+    {
+        return parent_t::template emplace<classU>(position, std::forward<Args>(args) ...);
+    }
+
     int id() const { return mId; }
 
 private:
