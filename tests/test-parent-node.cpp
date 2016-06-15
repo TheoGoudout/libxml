@@ -44,9 +44,8 @@ public:
             parent_t parent;
 
             CPPUNIT_ASSERT_EQUAL(0, child_t::objectNumber());
-            parent.first() = parent.last() = new child_t(&parent);
+            parent.push_front(std::move(child_t((parent_t*)0xdeadbeef)));
             CPPUNIT_ASSERT_EQUAL(1, child_t::objectNumber());
-            CPPUNIT_ASSERT(parent.size() == 1);
         }
         CPPUNIT_ASSERT_EQUAL(0, child_t::objectNumber());
 

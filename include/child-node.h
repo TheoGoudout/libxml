@@ -31,10 +31,11 @@ namespace xml {
         typedef parent_t*                 parent_pointer_t;   //!< A pointer to the parent type.
         typedef parent_t&                 parent_reference_t; //!< A reference to the parent type.
 
-        typedef basic_child_node<charT>   child_t;           //!< The type of children this node is.
-        typedef child_t*                  child_pointer_t;   //!< Pointer to \c child_t.
-        typedef child_t&                  child_reference_t; //!< Reference to \c child_t.
-        typedef child_t&&                 child_move_t;      //!< Move a \c child_t.
+        typedef basic_child_node<charT>   child_t;                 //!< The type of children this node is.
+        typedef child_t*                  child_pointer_t;         //!< Pointer to \c child_t.
+        typedef child_t&                  child_reference_t;       //!< Reference to \c child_t.
+        typedef const child_t&            child_const_reference_t; //!< Constant reference to \c child_t.
+        typedef child_t&&                 child_move_t;            //!< Move a \c child_t.
 
         //!@}
 

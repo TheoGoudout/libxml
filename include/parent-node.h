@@ -29,9 +29,10 @@ namespace xml {
         //!@{
         typedef basic_node_interface<charT> node_interface_t; //! The base type of this node.
 
-        typedef          basic_child_node<charT>    child_t;           //!< The type of children this node has.
-        typedef typename child_t::child_pointer_t   child_pointer_t;   //!< Pointer to \c child_t.
-        typedef typename child_t::child_reference_t child_reference_t; //!< Reference to \c child_t.
+        typedef          basic_child_node<charT>          child_t;                 //!< The type of children this node has.
+        typedef typename child_t::child_pointer_t         child_pointer_t;         //!< Pointer to \c child_t.
+        typedef typename child_t::child_reference_t       child_reference_t;       //!< Reference to \c child_t.
+        typedef typename child_t::child_const_reference_t child_const_reference_t; //!< Constant reference to \c child_t.
 
         //!@}
 
@@ -88,6 +89,7 @@ namespace xml {
         basic_parent_node ()
         :
             node_interface_t(),
+            mSize(0),
             mFirst(nullptr),
             mLast(nullptr)
         {}
@@ -257,7 +259,75 @@ namespace xml {
          */
         size_t size () const
         {
-            return std::distance(cbegin(), cend());
+            return mSize;
+        }
+
+        //! \brief Whether the node is empty.
+        /*!
+         *  This function checks if the current node is empty.
+         *  This is equivalent to `size() == 0`.
+         *
+         *  \return \c true if the current node is empty, \c false otherwise.
+         */
+        bool empty() const noexcept
+        {
+            return size() == 0;
+        }
+
+        //! \brief Access first element
+        /*!
+         *  Returns a reference to the first child of this node.
+         *  Unlike member basic_parent_node::begin, which returns an iterator
+         *  to this same element, this function returns a direct reference.
+         *  Calling this function on an empty node causes undefined behaviour.
+         *
+         *  \return A reference to the first child of this node.
+         */
+        child_reference_t front()
+        {
+            return *mFirst;
+        }
+
+        //! \brief Access first element
+        /*!
+         *  Returns a reference to the first child of this node.
+         *  Unlike member basic_parent_node::begin, which returns an iterator
+         *  to this same element, this function returns a direct reference.
+         *  Calling this function on an empty node causes undefined behaviour.
+         *
+         *  \return A constant reference to the first child of this node.
+         */
+        child_const_reference_t front() const
+        {
+            return *mFirst;
+        }
+
+        //! \brief Access last element
+        /*!
+         *  Returns a reference to the last child of this node.
+         *  Unlike member basic_parent_node::end, which returns an iterator
+         *  just past this element, this function returns a direct reference.
+         *  Calling this function on an empty node causes undefined behaviour.
+         *
+         *  \return A reference to the last child of this node.
+         */
+        child_reference_t back()
+        {
+            return *mLast;
+        }
+
+        //! \brief Access last element
+        /*!
+         *  Returns a reference to the last child of this node.
+         *  Unlike member basic_parent_node::end, which returns an iterator
+         *  just past this element, this function returns a direct reference.
+         *  Calling this function on an empty node causes undefined behaviour.
+         *
+         *  \return A constant reference to the last child of this node.
+         */
+        child_const_reference_t back() const
+        {
+            return *mLast;
         }
 
     protected:
@@ -497,6 +567,8 @@ namespace xml {
 
             delete ptr;
 
+            --mSize;
+
             return iterator<classT>(next);
         }
 
@@ -576,10 +648,14 @@ namespace xml {
             else
                 mFirst = ptr;
 
+            ++mSize;
+
             return iterator<classT>(ptr);
         }
 
     protected:
+        size_t mSize; //! The number of children owned by this node.
+
         child_pointer_t mFirst; //!< A pointer to the first element.
         child_pointer_t mLast;  //!< A pointer to the last element.
     };
