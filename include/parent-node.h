@@ -1,17 +1,20 @@
 #ifndef basic_parent_node_H_INCLUDED
 #define basic_parent_node_H_INCLUDED
 
+#include <cassert>
 #include <iterator>
 #include <initializer_list>
+
+namespace xml {
+    template <typename charT>
+    class basic_parent_node;
+}
 
 #include <node-interface.h>
 #include <child-node.h>
 #include <iterator.h>
 
 namespace xml {
-    template <typename charT>
-    class basic_child_node;
-
     //! \brief An abstract XML node that has children.
     /*!
      *  This class represents an abstract XML node that has children.
@@ -27,12 +30,19 @@ namespace xml {
     public:
         //! \name Member types
         //!@{
-        typedef basic_node_interface<charT> node_interface_t; //! The base type of this node.
+        typedef basic_node_interface<charT> node_interface_t; //!< The base type of this node.
+
+        typedef basic_parent_node<charT>   parent_t;                 //!< The type of parent this node is.
+        typedef parent_t*                  parent_pointer_t;         //!< Pointer to \c parent_t.
+        typedef parent_t&                  parent_reference_t;       //!< Reference to \c parent_t.
+        typedef const parent_t&            parent_const_reference_t; //!< Constant reference to \c parent_t.
+        typedef parent_t&&                 parent_move_t;            //!< Move a \c parent_t.
 
         typedef          basic_child_node<charT>          child_t;                 //!< The type of children this node has.
         typedef typename child_t::child_pointer_t         child_pointer_t;         //!< Pointer to \c child_t.
         typedef typename child_t::child_reference_t       child_reference_t;       //!< Reference to \c child_t.
         typedef typename child_t::child_const_reference_t child_const_reference_t; //!< Constant reference to \c child_t.
+        typedef typename child_t::child_move_t            child_move_t;            //!< Move a \c child_t.
 
         //!@}
 
@@ -83,8 +93,8 @@ namespace xml {
 
         //! \brief Default constructor
         /*!
-         *  This constructor initialise the internals of a parent node, i.e.
-         *  its first and last child node.
+         *  This constructor initialise the internals of a parent node
+         *  (i.e. its first and last child node).
          */
         basic_parent_node ()
         :
@@ -94,6 +104,47 @@ namespace xml {
             mLast(nullptr)
         {}
 
+        //! \brief Copy constructor
+        /*!
+         *  This constructor initialise the internals of a parent node
+         *  (i.e. its first and last child node), and creates a copy of all
+         *  \c rhs children and insert them into the newly created copy.
+         *
+         *  \param [in] rhs A constant reference to a \c parent_t.
+         */
+        basic_parent_node (parent_const_reference_t rhs)
+        :
+            node_interface_t(rhs),
+            mSize(0),
+            mFirst(nullptr),
+            mLast(nullptr)
+        {
+            insert(cbegin(), rhs.cbegin(), rhs.cend());
+        }
+
+        //! \brief Move constructor
+        /*!
+         *  This constructor initialise the internals of a parent node
+         *  (i.e. its first and last child node), and takes the place of \c rhs.
+         *
+         *  \param [in] rhs A rvalue reference to a \c parent_t.
+         */
+        basic_parent_node (parent_move_t rhs)
+        :
+            node_interface_t(rhs),
+            mSize(0),
+            mFirst(nullptr),
+            mLast(nullptr)
+        {
+            while (rhs.size() > 0)
+            {
+                auto ptr = rhs.mFirst;
+
+                remove(ptr);
+                insert(cend(), ptr);
+            }
+        }
+
         //! \brief Default destructor
         /*!
          *  This destructor reset all the internal values.
@@ -102,8 +153,9 @@ namespace xml {
         {
             clear();
 
+            mSize  = 0;
             mFirst = nullptr;
-            mLast = nullptr;
+            mLast  = nullptr;
         }
 
         //! \brief Return iterator to beginning.
@@ -342,7 +394,7 @@ namespace xml {
          *  \return An \c iterator pointing to the newly inserted element.
          */
         template <class classT = child_t>
-        iterator<classT> insert (iterator<classT> position, const child_t& val)
+        iterator<classT> insert (iterator<classT> position, child_const_reference_t val)
         {
             return insert(position, val.clone());
         }
@@ -359,7 +411,7 @@ namespace xml {
          *  \return An \c iterator pointing to the first newly inserted element.
          */
         template <class classT = child_t>
-        iterator<classT> insert (iterator<classT> position, size_t n, const child_t& val)
+        iterator<classT> insert (iterator<classT> position, size_t n, child_const_reference_t val)
         {
             if (n == 0)
                 return position;
@@ -403,7 +455,7 @@ namespace xml {
          *  \return An \c iterator pointing to the first newly inserted element.
          */
         template <class classT = child_t>
-        iterator<classT> insert (iterator<classT> position, child_t&& val)
+        iterator<classT> insert (iterator<classT> position, child_move_t val)
         {
             return insert(position, val.clone(std::move(val)));
         }
@@ -434,7 +486,7 @@ namespace xml {
          *  \return An \c iterator pointing to the newly inserted element.
          */
         template <class classT = child_t>
-        iterator<classT> push_front (const child_t& val)
+        iterator<classT> push_front (child_const_reference_t val)
         {
             return insert(cbegin(), val);
         }
@@ -449,7 +501,7 @@ namespace xml {
          *  \return An \c iterator pointing to the newly inserted element.
          */
         template <class classT = child_t>
-        iterator<classT> push_front (child_t&& val)
+        iterator<classT> push_front (child_move_t val)
         {
             return insert(cbegin(), std::move(val));
         }
@@ -464,7 +516,7 @@ namespace xml {
          *  \return An \c iterator pointing to the newly inserted element.
          */
         template <class classT = child_t>
-        iterator<classT> push_back (const child_t& val)
+        iterator<classT> push_back (child_const_reference_t val)
         {
             return insert(cend(), val);
         }
@@ -479,7 +531,7 @@ namespace xml {
          *  \return An \c iterator pointing to the newly inserted element.
          */
         template <class classT = child_t>
-        iterator<classT> push_back (child_t&& val)
+        iterator<classT> push_back (child_move_t val)
         {
             return insert(cend(), std::move(val));
         }
@@ -550,26 +602,11 @@ namespace xml {
         template <class classT = child_t>
         iterator<classT> erase (iterator<classT> position)
         {
-            child_pointer_t ptr = position.mPtr;
+            auto it = remove(position.mPtr);
 
-            child_pointer_t next = ptr->mNext;
-            child_pointer_t previous = ptr->mPrevious;
+            delete position.mPtr;
 
-            if (next)
-                next->mPrevious = previous;
-            else
-                mLast = previous;
-
-            if (previous)
-                previous->mNext = next;
-            else
-                mFirst = next;
-
-            delete ptr;
-
-            --mSize;
-
-            return iterator<classT>(next);
+            return it;
         }
 
         //! \brief Erase a range of elements.
@@ -624,7 +661,7 @@ namespace xml {
          *  \c basic_parent_node before the item pointed by the \c const_iterator.
          *
          *  \param [in] position A \c const_iterator before which \c val should be moved.
-         *  \param [in] val      The pointer to be insert.
+         *  \param [in] val      The pointer to insert.
          *
          *  \return An \c iterator pointing to the newly inserted element.
          */
@@ -653,11 +690,45 @@ namespace xml {
             return iterator<classT>(ptr);
         }
 
+        //! \brief Remove element.
+        /*!
+         *  The element pointed by the \c child_pointer_t will be remove.
+         *  The element is not deleted.
+         *
+         *  \param [in] ptr The pointer to remove.
+         *
+         *  \return An iterator pointing to the element that followed the erased element.
+         */
+        template <class classT = child_t>
+        iterator<classT> remove (child_pointer_t ptr)
+        {
+            assert(ptr->mParent == this);
+
+            child_pointer_t next = ptr->mNext;
+            child_pointer_t previous = ptr->mPrevious;
+
+            if (next)
+                next->mPrevious = previous;
+            else
+                mLast = previous;
+
+            if (previous)
+                previous->mNext = next;
+            else
+                mFirst = next;
+
+            --mSize;
+
+            return iterator<classT>(next);
+        }
+
     protected:
-        size_t mSize; //! The number of children owned by this node.
+        size_t mSize; //!< The number of children owned by this node.
 
         child_pointer_t mFirst; //!< A pointer to the first element.
         child_pointer_t mLast;  //!< A pointer to the last element.
+
+        friend class basic_child_node<charT>;
     };
 
     typedef basic_parent_node<char>    parent_node;  //!< A specialized \c basic_parent_node for char.

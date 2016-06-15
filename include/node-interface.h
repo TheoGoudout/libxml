@@ -19,19 +19,45 @@ namespace xml {
         //!@{
         typedef std::basic_string<charT> type_t; //!< The type of a node type.
 
+        typedef basic_node_interface<charT> node_interface_t;                 //!< The type of node interface this node is.
+        typedef node_interface_t*           node_interface_pointer_t;         //!< Pointer to \c node_interface_t.
+        typedef node_interface_t&           node_interface_reference_t;       //!< Reference to \c node_interface_t.
+        typedef const node_interface_t&     node_interface_const_reference_t; //!< Constant reference to \c node_interface_t.
+        typedef node_interface_t&&          node_interface_move_t;            //!< Move a \c node_interface_t.
+
         //!@}
 
         //! \brief Default constructor
         /*!
          *  This constructor does nothing.
          */
-        basic_node_interface() {}
+        basic_node_interface()
+        {}
+
+        //! \brief Copy constructor
+        /*!
+         *  This constructor does nothing.
+         *
+         *  \param [in] rhs A constant reference to a \c node_interface_t.
+         */
+        basic_node_interface(node_interface_const_reference_t rhs)
+        {}
+
+        //! \brief Move constructor
+        /*!
+         *  This constructor does nothing.
+         *
+         *  \param [in] rhs A rvalue reference to a \c node_interface_t.
+         */
+        basic_node_interface(node_interface_move_t rhs)
+        {}
 
         //! \brief Default destructor
         /*!
          *  This destructor does nothing.
          */
-        virtual ~basic_node_interface() {}
+        virtual ~basic_node_interface()
+        {}
 
         //! \brief Returns the type of a node.
         /*!

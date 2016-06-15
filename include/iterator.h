@@ -3,6 +3,11 @@
 
 #include <iostream>
 
+namespace xml {
+    template <typename charT, class classT>
+    class basic_iterator;
+}
+
 #include <parent-node.h>
 #include <child-node.h>
 

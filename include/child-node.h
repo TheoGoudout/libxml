@@ -1,15 +1,16 @@
 #ifndef basic_child_node_H_INCLUDED
 #define basic_child_node_H_INCLUDED
 
-#include <node-interface.h>
-
 namespace xml {
     template <typename charT>
-    class basic_parent_node;
+    class basic_child_node;
+}
 
-    template <typename charT, class classT>
-    class basic_iterator;
+#include <node-interface.h>
+#include <child-node.h>
+#include <iterator.h>
 
+namespace xml {
     //! \brief An abstract XML node that has a parent and siblings.
     /*!
      *  This class represents an abstract XML node that has a parent
@@ -25,11 +26,7 @@ namespace xml {
     public:
         //! \name Member types
         //!@{
-        typedef basic_node_interface<charT> node_interface_t; //! The base type of this node.
-
-        typedef basic_parent_node<charT>  parent_t;           //!< The parent node type.
-        typedef parent_t*                 parent_pointer_t;   //!< A pointer to the parent type.
-        typedef parent_t&                 parent_reference_t; //!< A reference to the parent type.
+        typedef basic_node_interface<charT> node_interface_t; //!< The base type of this node.
 
         typedef basic_child_node<charT>   child_t;                 //!< The type of children this node is.
         typedef child_t*                  child_pointer_t;         //!< Pointer to \c child_t.
@@ -37,12 +34,16 @@ namespace xml {
         typedef const child_t&            child_const_reference_t; //!< Constant reference to \c child_t.
         typedef child_t&&                 child_move_t;            //!< Move a \c child_t.
 
+        typedef          basic_parent_node<charT>     parent_t;           //!< The parent node type.
+        typedef typename parent_t::parent_pointer_t   parent_pointer_t;   //!< A pointer to the parent type.
+        typedef typename parent_t::parent_reference_t parent_reference_t; //!< A reference to the parent type.
+
         //!@}
 
         //! \brief Default constructor
         /*!
-         *  This constructor initialise the internals of a child node, i.e.
-         *  its parent, and its next and previous child node.
+         *  This constructor initialise the internals of a child node
+         *  (i.e. its parent, and its next and previous child node).
          *
          *  \param[in] parent The parent node of this one.
          */
@@ -53,6 +54,47 @@ namespace xml {
             mPrevious(nullptr),
             mNext(nullptr)
         {}
+
+        //! \brief Copy constructor
+        /*!
+         *  This constructor initialise the internals of a child node
+         *  (i.e. its parent, and its next and previous child node).
+         *
+         *  \param [in] rhs A constant reference to a \c child_t.
+         */
+        basic_child_node(child_const_reference_t rhs)
+        :
+            node_interface_t(rhs),
+            mParent(nullptr),
+            mPrevious(nullptr),
+            mNext(nullptr)
+        {}
+
+        //! \brief Move constructor
+        /*!
+         *  This constructor initialise the internals of a child node
+         *  (i.e.  its parent, and its next and previous child node),
+         *  and takes the place of \c rhs.
+         *
+         *  \param [in] rhs A rvalue reference to a \c child_t.
+         */
+        basic_child_node(child_move_t rhs)
+        :
+            node_interface_t(rhs),
+            mParent(rhs.mParent),
+            mPrevious(rhs.mPrevious),
+            mNext(rhs.mNext)
+        {
+            if (mPrevious)
+                mPrevious->mNext = this;
+            else
+                mParent->mFirst = this;
+
+            if (mNext)
+                mNext->mPrevious = this;
+            else
+                mParent->mLast = this;
+        }
 
         //! \brief Default destructor
         /*!
