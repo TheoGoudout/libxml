@@ -7,12 +7,12 @@ find_package(Doxygen)
 if(DOXYGEN_FOUND)
 
     # Define parameters
-    option(INSTALL_HTML_DOC    "Whether a HTML documentation should be installed." OFF)
+    option(INSTALL_HTML_DOC    "Whether a HTML documentation should be installed."                             OFF)
     option(INSTALL_LATEX_DOC   "Whether a PDF documentation (generated from LaTeX files) should be installed." OFF)
-    option(INSTALL_RTF_DOC     "Whether a RTF documentation should be installed." OFF)
-    option(INSTALL_MAN_DOC     "Whether a linux manual should be installed." ON)
-    option(INSTALL_XML_DOC     "Whether a XML documentation should be installed." OFF)
-    option(INSTALL_DOCBOOK_DOC "Whether a Docbook documentation should be installed." OFF)
+    option(INSTALL_RTF_DOC     "Whether a RTF documentation should be installed."                              OFF)
+    option(INSTALL_MAN_DOC     "Whether a linux manual should be installed."                                   ON )
+    option(INSTALL_XML_DOC     "Whether a XML documentation should be installed."                              OFF)
+    option(INSTALL_DOCBOOK_DOC "Whether a Docbook documentation should be installed."                          OFF)
 
     # Define parameters that might already be set
     if("${XML_INCLUDE_DIR}" STREQUAL "")
@@ -106,6 +106,7 @@ if(DOXYGEN_FOUND)
         ${XML_INCLUDE_DIR}/parent-node.h
         ${XML_INCLUDE_DIR}/child-node.h
         ${XML_INCLUDE_DIR}/node.h
+        ${XML_INCLUDE_DIR}/iterator.h
         ${XML_INCLUDE_DIR}/document.h
         ${XML_INCLUDE_DIR}/element.h
         ${XML_INCLUDE_DIR}/attribute.h
@@ -138,8 +139,7 @@ if(DOXYGEN_FOUND)
         # Add rule to create doxygen documentation
         add_custom_command(
             OUTPUT ${DOXYGEN_OUTPUT}
-            COMMAND ${CMAKE_COMMAND} -E echo "Building documentation...\n"
-            COMMAND ${DOXYGEN_EXECUTABLE} ${DOXYGEN_INPUT}
+            COMMAND ${DOXYGEN_EXECUTABLE} ${DOXYGEN_INPUT} 2>&1 > doxygen.out
             WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
             MAIN_DEPENDENCY ${DOXYGEN_INPUT}
             DEPENDS ${DOXYGEN_INPUT_HEADERS}
@@ -150,8 +150,7 @@ if(DOXYGEN_FOUND)
     # Add rule to create PDF from LaTeX
     add_custom_command(
         OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/latex/refman.pdf
-        COMMAND ${CMAKE_COMMAND} -E echo "Building PDF file...\n"
-        COMMAND make
+        COMMAND make 2>&1 > latex.out
         WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/latex
         MAIN_DEPENDENCY ${CMAKE_CURRENT_BINARY_DIR}/latex/refman.tex
         DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/latex/Makefile

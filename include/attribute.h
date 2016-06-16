@@ -10,7 +10,7 @@
 
 namespace xml {
 
-    //! \brief An XML attribute.
+    //! \brief A XML attribute.
     /*!
      *  This class represents an XML attribute that has a name and a value.
      *
@@ -22,34 +22,61 @@ namespace xml {
     public:
         //! \name Member types
         //!@{
-        typedef          basic_readable<charT>  readable_t;
-        typedef typename readable_t::string_t   string_t;
-        typedef typename readable_t::istream_t  istream_t;
+        typedef std::basic_string<charT>  string_t;  //!< The type of string to parse
 
-        typedef          std::basic_istringstream<charT> istringstream_t;
+        typedef basic_attribute<charT> attribute_t;                 //!< The type of attribute.
+        typedef attribute_t*           attribute_pointer_t;         //!< Pointer to \c attribute_t.
+        typedef attribute_t&           attribute_reference_t;       //!< Reference to \c attribute_t.
+        typedef const attribute_t&     attribute_const_reference_t; //!< Constant reference to \c attribute_t.
+        typedef attribute_t&&          attribute_move_t;            //!< Move a \c attribute_t.
 
         //!@}
 
-        //! \brief Public constructor for attribute.
+        //! \brief Constructor.
         /*!
-         *  This constructor build a new \c basic_attribute object,
-         *  with a name and a value. \c setName and \c setValue will
-         *  be called to initialize the object.
+         *  This constructor build a new attribute with a name and a value.
          *
          *  \param [in] name  The name of the attribute.
          *  \param [in] value The value of the attribute.
-         *
-         *  \sa setName
-         *  \sa setValue
          */
         basic_attribute(
             const string_t& name,
             const string_t& value)
-        {
-            setName(name);
-            setValue(value);
-        }
+        :
+            mName(name),
+            mValue(value)
+        {}
 
+        //! \brief Copy constructor.
+        /*!
+         *  This constructor creates a copy of an existing attribute.
+         *
+         *  \param [in] rhs A constant reference to a \c attribute_t.
+         */
+        basic_attribute(attribute_const_reference_t rhs)
+        :
+            mName(rhs.mName),
+            mValue(rhs.mValue)
+        {}
+
+        //! \brief Move constructor.
+        /*!
+         *  This constructor moves the internals of an attribute.
+         *
+         *  \param [in] rhs A rvalue reference to a \c attribute_t.
+         */
+        basic_attribute(attribute_move_t rhs)
+        :
+            mName(std::move(rhs.mName)),
+            mValue(std::move(rhs.mValue))
+        {}
+
+        //! \brief Destructor.
+        /*!
+         *  This destructor does nothing.
+         */
+        virtual ~basic_attribute()
+        {}
 
         basic_attribute(readable_t& input)
         {
@@ -63,11 +90,21 @@ namespace xml {
          *  This function returns a constant reference to the name of the
          *  \c basic_attribute.
          *
-         *  \return A reference to the name of the \c basic_attribute.
-         *
-         *  \sa setName
+         *  \return A constant reference to the name of the \c basic_attribute.
          */
         const string_t& name() const
+        {
+            return mName;
+        }
+
+        //! \brief Get the name of an attribute.
+        /*!
+         *  This function returns a reference to the name of the
+         *  \c basic_attribute.
+         *
+         *  \return A reference to the name of the \c basic_attribute.
+         */
+        string_t& name()
         {
             return mName;
         }
@@ -76,61 +113,33 @@ namespace xml {
         /*!
          *  This function returns a constant reference to the value of the
          *  \c basic_attribute.
-         *  The returned value is a XML formatted string.
          *
-         *  \return A reference to the value of the \c basic_attribute.
-         *
-         *  \sa setValue
+         *  \return A constant reference to the value of the \c basic_attribute.
          */
         const string_t& value() const
         {
             return mValue;
         }
 
-        //! \brief Set the name of an attribute.
+        //! \brief Get the value of an attribute.
         /*!
-         *  This function sets the name of the \c basic_attribute.
+         *  This function returns a reference to the value of the
+         *  \c basic_attribute.
          *
-         *  \param [in] name A reference to a XML formatted string.
-         *
-         *  \return The current \c basic_attribute.
-         *
-         *  \sa name
+         *  \return A reference to the value of the \c basic_attribute.
          */
-        basic_attribute<charT>& setName(const string_t& name)
+        string_t& value()
         {
-            istringstream_t sstr(name);
-            readable_t input(sstr);
-            input.read_name(mName);
-            input.read_eof();
-
-            return *this;
-        }
-
-        //! \brief Set the value of an attribute.
-        /*!
-         *  This function sets the value of the \c basic_attribute.
-         *
-         *  \param [in] value A reference to a XML formatted string.
-         *
-         *  \return The current \c basic_attribute.
-         *
-         *  \sa value
-         */
-        basic_attribute<charT>& setValue(const string_t& value)
-        {
-            istringstream_t sstr(value);
-            readable_t input(sstr);
-            input.read_attribute_value('"', mValue);
-            input.read_eof();
-
-            return *this;
+            return mValue;
         }
 
     private:
-        string_t mName;  //!< The name of an attribute.
+        string_t  mName; //!< The name of an attribute.
         string_t mValue; //!< The value of an attribute.
     };
+
+    typedef basic_attribute<char>    attribute;  //!< A specialized \c basic_attribute for char.
+    typedef basic_attribute<wchar_t> wattribute; //!< A specialized \c basic_attribute for wchar_t.
 }
 
 #endif /* ATTRIBUTE_H_INCLUDED */
