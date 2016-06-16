@@ -22,18 +22,27 @@ namespace xml {
     public:
         //! \name Member types
         //!@{
+        typedef          basic_node_interface<charT> node_interface_t; //!< The base type of this node.
+        typedef typename node_interface_t::type_t    type_t;           //!< The type of a node type.
+
         typedef          basic_parent_node<charT> parent_t; //!< The parent node type.
         typedef typename parent_t::child_t        child_t;  //!< The child node type.
 
-        typedef          basic_element<charT>     root_t;           //!< The root node type.
-        typedef          root_t*                  root_pointer_t;   //!< The root node type.
-        typedef          root_t&                  root_reference_t; //!< The root node type.
+        typedef          basic_element<charT>              root_t;                 //!< The root node type.
+        typedef typename root_t::element_pointer_t         root_pointer_t;         //!< The root node type.
+        typedef typename root_t::element_reference_t       root_reference_t;       //!< The root node type.
+        typedef typename root_t::element_const_reference_t root_const_reference_t; //!< The root node type.
+        typedef typename root_t::element_move_t            root_move_t;            //!< The root node type.
 
-        typedef          std::basic_string<charT> string_t; //!< The string type.
+        typedef basic_document<charT> document_t;                 //!< The type of document this node is.
+        typedef document_t*           document_pointer_t;         //!< Pointer to \c document_t.
+        typedef document_t&           document_reference_t;       //!< Reference to \c document_t.
+        typedef const document_t&     document_const_reference_t; //!< Constant reference to \c document_t.
+        typedef document_t&&          document_move_t;            //!< Move a \c document_t.
+
+        typedef std::basic_string<charT> string_t; //!< The string type.
 
         //!@}
-
-        virtual std::basic_string<charT> type() const;
 
         //! \brief The version of a XML document
         /*!
@@ -44,11 +53,7 @@ namespace xml {
         public:
             uint8_t major; //!< The major version number.
             uint8_t minor; //!< The minor version number.
-
-            string_t toString() const;      //!< Converts the version to a string formatted as "<major>.<minor>".
-            string_t majorToString() const; //!< Converts the major version number to a string.
-            string_t minorToString() const; //!< Converts the minor version number to a string.
-        } version; //!< The XML version of this document.
+        };
 
         //! \brief The encoding of a XML document
         /*!
@@ -61,9 +66,7 @@ namespace xml {
                 UTF8,
                 undefined
             } value;
-
-            string_t toString() const; //!< Converts the document encoding to a string.
-        } encoding; //!< The encoding version of this document.
+        };
 
         //! \brief Whether a XML document is standalone
         /*!
@@ -78,9 +81,117 @@ namespace xml {
                 no,
                 undefined
             } value;
+        };
 
-            string_t toString() const; //!< Converts the document standalone value to a string.
-        } standalone; //!< Whether this XML document is a standalone.
+        //! \brief Constructor.
+        /*!
+         *  This constructor initialise the internals of an document, and
+         *  inserts a root element with name \c root_name.
+         *
+         *  \param[in] root_name The name of the root element.
+         */
+        basic_document(const string_t& root_name)
+        :
+            parent_t(),
+            mVersion(),
+            mEncoding(),
+            mStandalone(),
+            mRoot(nullptr)
+        {
+            parent_t::template emplace_front<root_t>(root_name);
+
+            mRoot = &(*parent_t::template begin<root_t>());
+        }
+
+        //! \brief Constructor.
+        /*!
+         *  This constructor initialise the internals of an document, and
+         *  inserts a root element.
+         *
+         *  \param[in] root The root element.
+         */
+        basic_document(root_const_reference_t root)
+        :
+            parent_t(),
+            mVersion(),
+            mEncoding(),
+            mStandalone(),
+            mRoot(nullptr)
+        {
+            parent_t::push_front(root);
+
+            mRoot = &(*parent_t::template begin<root_t>());
+        }
+
+        //! \brief Constructor.
+        /*!
+         *  This constructor initialise the internals of an document, and moves
+         *  a root element.
+         *
+         *  \param[in] root The root element.
+         */
+        basic_document(root_move_t root)
+        :
+            parent_t(),
+            mVersion(),
+            mEncoding(),
+            mStandalone(),
+            mRoot(nullptr)
+        {
+            parent_t::push_front(std::move(root));
+
+            mRoot = &(*parent_t::template begin<root_t>());
+        }
+
+        //! \brief Copy constructor.
+        /*!
+         *  Creates a copy of an XML document.
+         *
+         *  \param [in] rhs A constant reference to a \c document_t.
+         */
+        basic_document(document_const_reference_t rhs)
+        :
+            parent_t(rhs),
+            mVersion(rhs.mVersion),
+            mEncoding(rhs.mEncoding),
+            mStandalone(rhs.mStandalone),
+            mRoot(nullptr)
+        {
+            mRoot = &(*parent_t::template begin<root_t>());
+        }
+
+        //! \brief Move constructor.
+        /*!
+         *  Moves the internal of a \c element_t.
+         *
+         *  \param [in] rhs A rvalue reference to a \c element_t.
+         */
+        basic_document(document_move_t rhs)
+        :
+            parent_t(std::move(rhs)),
+            mVersion(rhs.mVersion),
+            mEncoding(rhs.mEncoding),
+            mStandalone(rhs.mStandalone),
+            mRoot(rhs.mRoot)
+        {}
+
+        //! \brief Destructor.
+        /*!
+         *  This destructor does nothing.
+         */
+        virtual ~basic_document()
+        {}
+
+        //! \brief Get the type of a \c document_t.
+        /*!
+         *  This function returns the type of a \c document_t.
+         *
+         *  \return The type of a \c document_t.
+         */
+        virtual type_t type() const
+        {
+            return node_interface_t::stringToType("document");
+        }
 
         //! \brief Get a constant reference to the root element of this XML document.
         /*!
@@ -101,6 +212,10 @@ namespace xml {
         root_reference_t root() { return *mRoot; }
 
     private:
+        version_t    mVersion;    //!< The XML version of this document.
+        encoding_t   mEncoding;   //!< The encoding version of this document.
+        standalone_t mStandalone; //!< Whether this XML document is a standalone.
+
         root_pointer_t mRoot; //!< A pointer to the root element of this document.
     };
 
