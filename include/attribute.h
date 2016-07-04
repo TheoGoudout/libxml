@@ -30,6 +30,8 @@ namespace xml {
         typedef const attribute_t&     attribute_const_reference_t; //!< Constant reference to \c attribute_t.
         typedef attribute_t&&          attribute_move_t;            //!< Move a \c attribute_t.
 
+        typedef basic_readable<charT> readable_t; //!< The type of readable.
+
         //!@}
 
         //! \brief Constructor.
@@ -71,19 +73,25 @@ namespace xml {
             mValue(std::move(rhs.mValue))
         {}
 
-        //! \brief Destructor.
+        //! \brief Parsing constructor.
         /*!
-         *  This destructor does nothing.
+         *  This constructor parses the internals of an attribute.
+         *
+         *  \param [in] input The input stream parser used to get attribute internals.
          */
-        virtual ~basic_attribute()
-        {}
-
         basic_attribute(readable_t& input)
         {
             input.read_name_and_quoted_value(
                 &readable_t::read_name,            mName,
                 &readable_t::read_attribute_value, mValue);
         }
+
+        //! \brief Destructor.
+        /*!
+         *  This destructor does nothing.
+         */
+        virtual ~basic_attribute()
+        {}
 
         //! \brief Get the name of an attribute.
         /*!
