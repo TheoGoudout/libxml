@@ -285,11 +285,28 @@ namespace xml {
 
         bool read_char(char_t& c)
         {
-            return
-                match_in({0x9, 0xA, 0xD}, c) ||
-                match_in(0x20, 0xD7FF, c) ||
-                match_in(0xE000, 0xFFFD, c) ||
-                match_in(0x10000, 0x10FFFF, c);
+            if (match_in({0x9, 0xA, 0xD}, c))
+                return true;
+
+            if (match_in(0x20, 0xFF, c))
+                return true;
+
+            if (std::numeric_limits<char_t>::max() <= 0xFF)
+                return false;
+
+            if (match_in((char_t)0x100, (char_t)0xD7FF, c))
+                return true;
+
+            if (match_in((char_t)0xE000, (char_t)0xFFFD, c))
+                return true;
+
+            if (std::numeric_limits<char_t>::max() <= 0xFFFF)
+                return false;
+
+            if (match_in((char_t)0x10000, (char_t)0x10FFFF, c))
+                return true;
+
+            return false;
         }
 
         bool read_space(char_t& c)
@@ -299,35 +316,93 @@ namespace xml {
 
         bool read_name_start_char(char_t& c)
         {
-            return
-                match(':', c) ||
-                read_upper_letter(c) ||
-                match('_', c) ||
-                read_lower_letter(c) ||
-                match_in(0xC0, 0xD6, c) ||
-                match_in(0xD8, 0xF6, c) ||
-                match_in(0xF8, 0x2FF, c) ||
-                match_in(0x370, 0x37D, c) ||
-                match_in(0x37F, 0x1FFF, c) ||
-                match_in(0x200C, 0x200D, c) ||
-                match_in(0x2070, 0x218F, c) ||
-                match_in(0x2C00, 0x2FEF, c) ||
-                match_in(0x3001, 0xD7FF, c) ||
-                match_in(0xF900, 0xFDCF, c) ||
-                match_in(0xFDF0, 0xFFFD, c) ||
-                match_in(0x10000, 0xEFFFF, c);
+            if (match(':', c))
+                return true;
+
+            if (read_upper_letter(c))
+                return true;
+
+            if (match('_', c))
+                return true;
+
+            if (read_lower_letter(c))
+                return true;
+
+            if (match_in(0xC0, 0xD6, c))
+                return true;
+
+            if (match_in(0xD8, 0xF6, c))
+                return true;
+
+            if (match_in(0xF8, 0xFF, c))
+                return true;
+
+            if (std::numeric_limits<char_t>::max() <= 0xFF)
+                return false;
+
+            if (match_in((char_t)0x100, (char_t)0x2FF, c))
+                return true;
+
+            if (match_in((char_t)0x370, (char_t)0x37D, c))
+                return true;
+
+            if (match_in((char_t)0x37F, (char_t)0x1FFF, c))
+                return true;
+
+            if (match_in((char_t)0x200C, (char_t)0x200D, c))
+                return true;
+
+            if (match_in((char_t)0x2070, (char_t)0x218F, c))
+                return true;
+
+            if (match_in((char_t)0x2C00, (char_t)0x2FEF, c))
+                return true;
+
+            if (match_in((char_t)0x3001, (char_t)0xD7FF, c))
+                return true;
+
+            if (match_in((char_t)0xF900, (char_t)0xFDCF, c))
+                return true;
+
+            if (match_in((char_t)0xFDF0, (char_t)0xFFFD, c))
+                return true;
+
+            if (std::numeric_limits<char_t>::max() <= 0xFFFF)
+                return false;
+
+            if (match_in((char_t)0x10000, (char_t)0xEFFFF, c))
+                return true;
+
+            return false;
         }
 
         bool read_name_char(char_t& c)
         {
-            return
-                read_name_start_char(c) ||
-                match('-', c) ||
-                match('.', c) ||
-                read_digit(c) ||
-                match(0xB7, c) ||
-                match_in(0x300, 0x36F, c) ||
-                match_in(0x203F, 0x2040, c);
+            if(read_name_start_char(c))
+                return true;
+
+            if(match('-', c))
+                return true;
+
+            if(match('.', c))
+                return true;
+
+            if(read_digit(c))
+                return true;
+
+            if(match(0xB7, c))
+                return true;
+
+            if (std::numeric_limits<char_t>::max() <= 0xFF)
+                return false;
+
+            if(match_in((char_t)0x300, (char_t)0x36F, c))
+                return true;
+
+            if(match_in((char_t)0x203F, (char_t)0x2040, c))
+                return true;
+
+            return false;
         }
 
         bool read_public_id_char(char_t& c)
