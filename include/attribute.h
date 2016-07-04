@@ -2,8 +2,6 @@
 #define ATTRIBUTE_H_INCLUDED
 
 #include <string>
-#include <istream>
-#include <sstream>
 
 #include <readable.h>
 #include <writeable.h>
@@ -30,7 +28,8 @@ namespace xml {
         typedef const attribute_t&     attribute_const_reference_t; //!< Constant reference to \c attribute_t.
         typedef attribute_t&&          attribute_move_t;            //!< Move a \c attribute_t.
 
-        typedef basic_readable<charT> readable_t; //!< The type of readable.
+        typedef          basic_readable<charT>            readable_t;           //!< The type of readable.
+        typedef typename readable_t::readable_reference_t readable_reference_t; //!< Pointer to \c child_t.
 
         //!@}
 
@@ -75,15 +74,14 @@ namespace xml {
 
         //! \brief Parsing constructor.
         /*!
-         *  This constructor parses the internals of an attribute.
+         *  This constructor parses the internals of an attribute_t.
          *
          *  \param [in] input The input stream parser used to get attribute internals.
          */
-        basic_attribute(readable_t& input)
+        basic_attribute(readable_reference_t input)
         {
-            input.read_name_and_quoted_value(
-                &readable_t::read_name,            mName,
-                &readable_t::read_attribute_value, mValue);
+            if (!parse(input))
+                throw -1; // TODO : throw parsing exception
         }
 
         //! \brief Destructor.
@@ -92,6 +90,20 @@ namespace xml {
          */
         virtual ~basic_attribute()
         {}
+
+        //! \brief Parse attribute internals.
+        /*!
+         *  This function parses the internals of an attribute_t.
+         *
+         *  \param [in] input The input stream parser used to get attribute internals.
+         */
+        bool parse(readable_reference_t input)
+        {
+            return input.read_name_and_quoted_value(
+                &readable_t::read_name,            mName,
+                &readable_t::read_attribute_value, mValue);
+        }
+
 
         //! \brief Get the name of an attribute.
         /*!

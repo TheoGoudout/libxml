@@ -6,6 +6,7 @@
 
 #include <parent-node.h>
 #include <child-node.h>
+#include <readable.h>
 
 namespace xml {
     //! \brief A XML text node.
@@ -37,6 +38,9 @@ namespace xml {
         typedef text_t&&          text_move_t;            //!< Move a \c text_t.
 
         typedef std::basic_string<charT> string_t; //!< The type of string stored.
+
+        typedef          basic_readable<charT>            readable_t;           //!< The type of readable.
+        typedef typename readable_t::readable_reference_t readable_reference_t; //!< Pointer to \c child_t.
 
         //!@}
 
@@ -80,12 +84,35 @@ namespace xml {
             mData(std::move(rhs.mData))
         {}
 
+        //! \brief Parsing constructor.
+        /*!
+         *  This constructor parses the internals of a text_t.
+         *
+         *  \param [in] input The input stream parser used to get text internals.
+         */
+        basic_text(readable_reference_t input)
+        {
+            if (!parse(input))
+                throw -1; // TODO : throw parsing exception
+        }
+
         //! \brief Destructor.
         /*!
          *  This destructor does nothing.
          */
         virtual ~basic_text()
         {}
+
+        //! \brief Parse text internals.
+        /*!
+         *  This function parses the internals of a text_t.
+         *
+         *  \param [in] input The input stream parser used to get text internals.
+         */
+        bool parse(readable_reference_t input)
+        {
+            return input.read_character_data(mData);
+        }
 
         //! \brief Get the type of a \c text_t.
         /*!
