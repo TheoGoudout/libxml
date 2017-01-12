@@ -14,7 +14,7 @@ int main (int argc, char** argv) {
     }
 
     try {
-        xml::wdocument doc(argv[1]);
+        xml::wdocument doc = xml::wdocument::fromFilename(argv[1]);
     } catch (xml::wexception & e) {
         std::wcerr << e << std::endl;
         return e.errCode();
