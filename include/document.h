@@ -28,17 +28,9 @@ namespace xml {
         typedef          basic_parent_node<charT> parent_t; //!< The parent node type.
         typedef typename parent_t::child_t        child_t;  //!< The child node type.
 
-        typedef          basic_element<charT>              root_t;                 //!< The root node type.
-        typedef typename root_t::element_pointer_t         root_pointer_t;         //!< The root node type.
-        typedef typename root_t::element_reference_t       root_reference_t;       //!< The root node type.
-        typedef typename root_t::element_const_reference_t root_const_reference_t; //!< The root node type.
-        typedef typename root_t::element_move_t            root_move_t;            //!< The root node type.
+        typedef basic_element<charT> root_t; //!< The root node type.
 
-        typedef basic_document<charT> document_t;                 //!< The type of document this node is.
-        typedef document_t*           document_pointer_t;         //!< Pointer to \c document_t.
-        typedef document_t&           document_reference_t;       //!< Reference to \c document_t.
-        typedef const document_t&     document_const_reference_t; //!< Constant reference to \c document_t.
-        typedef document_t&&          document_move_t;            //!< Move a \c document_t.
+        typedef basic_document<charT> document_t; //!< The type of document this node is.
 
         typedef std::basic_string<charT> string_t; //!< The string type.
 
@@ -110,7 +102,7 @@ namespace xml {
          *
          *  \param[in] root The root element.
          */
-        basic_document(root_const_reference_t root)
+        basic_document(const root_t& root)
         :
             parent_t(),
             mVersion(),
@@ -130,7 +122,7 @@ namespace xml {
          *
          *  \param[in] root The root element.
          */
-        basic_document(root_move_t root)
+        basic_document(root_t&& root)
         :
             parent_t(),
             mVersion(),
@@ -149,7 +141,7 @@ namespace xml {
          *
          *  \param [in] rhs A constant reference to a \c document_t.
          */
-        basic_document(document_const_reference_t rhs)
+        basic_document(const document_t& rhs)
         :
             parent_t(rhs),
             mVersion(rhs.mVersion),
@@ -166,7 +158,7 @@ namespace xml {
          *
          *  \param [in] rhs A rvalue reference to a \c element_t.
          */
-        basic_document(document_move_t rhs)
+        basic_document(document_t&& rhs)
         :
             parent_t(std::move(rhs)),
             mVersion(rhs.mVersion),
@@ -200,7 +192,7 @@ namespace xml {
          *
          *  \return A constant reference to the root element of this XML document.
          */
-        const root_reference_t root() const { return *mRoot; }
+        const root_t& root() const { return *mRoot; }
 
         //! \brief Get a reference to the root element of this XML document.
         /*!
@@ -209,14 +201,14 @@ namespace xml {
          *
          *  \return A reference to the root element of this XML document.
          */
-        root_reference_t root() { return *mRoot; }
+        root_t& root() { return *mRoot; }
 
     private:
         version_t    mVersion;    //!< The XML version of this document.
         encoding_t   mEncoding;   //!< The encoding version of this document.
         standalone_t mStandalone; //!< Whether this XML document is a standalone.
 
-        root_pointer_t mRoot; //!< A pointer to the root element of this document.
+        root_t* mRoot; //!< A pointer to the root element of this document.
     };
 
     typedef basic_document<char>    document;  //!< A specialized \c basic_document for char.

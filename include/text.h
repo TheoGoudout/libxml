@@ -24,23 +24,15 @@ namespace xml {
         typedef          basic_node_interface<charT> node_interface_t; //!< The base type of this node.
         typedef typename node_interface_t::type_t    type_t;           //!< The type of a node type.
 
-        typedef          basic_parent_node<charT>   parent_t;         //!< The parent type.
-        typedef typename parent_t::parent_pointer_t parent_pointer_t; //!< Pointer to \c parent_t.
+        typedef basic_parent_node<charT> parent_t; //!< The parent type.
 
-        typedef          basic_child_node<charT>  child_t;         //!< The child type.
-        typedef typename child_t::child_pointer_t child_pointer_t; //!< Pointer to \c child_t.
-        typedef typename child_t::child_move_t    child_move_t;    //!< Move a \c child_t.
+        typedef basic_child_node<charT> child_t; //!< The child type.
 
-        typedef basic_text<charT> text_t;                 //!< The type of text this node is.
-        typedef text_t*           text_pointer_t;         //!< Pointer to \c text_t.
-        typedef text_t&           text_reference_t;       //!< Reference to \c text_t.
-        typedef const text_t&     text_const_reference_t; //!< Constant reference to \c text_t.
-        typedef text_t&&          text_move_t;            //!< Move a \c text_t.
+        typedef basic_text<charT> text_t; //!< The type of text this node is.
 
         typedef std::basic_string<charT> string_t; //!< The type of string stored.
 
-        typedef          basic_readable<charT>            readable_t;           //!< The type of readable.
-        typedef typename readable_t::readable_reference_t readable_reference_t; //!< Pointer to \c child_t.
+        typedef basic_readable<charT> readable_t; //!< The type of readable.
 
         //!@}
 
@@ -54,7 +46,7 @@ namespace xml {
          */
         basic_text(
             string_t data,
-            parent_pointer_t parent = nullptr)
+            parent_t* parent = nullptr)
         :
             child_t(parent),
             mData(data)
@@ -66,7 +58,7 @@ namespace xml {
          *
          *  \param [in] rhs A constant reference to a \c text_t.
          */
-        basic_text(text_const_reference_t rhs)
+        basic_text(const text_t& rhs)
         :
             child_t(nullptr),
             mData(rhs.mData)
@@ -78,7 +70,7 @@ namespace xml {
          *
          *  \param [in] rhs A rvalue reference to a \c text_t.
          */
-        basic_text(text_move_t rhs)
+        basic_text(text_t&& rhs)
         :
             child_t(rhs),
             mData(std::move(rhs.mData))
@@ -90,7 +82,7 @@ namespace xml {
          *
          *  \param [in] input The input stream parser used to get text internals.
          */
-        basic_text(readable_reference_t input)
+        basic_text(readable_t& input)
         {
             if (!parse(input))
                 throw -1; // TODO : throw parsing exception
@@ -109,7 +101,7 @@ namespace xml {
          *
          *  \param [in] input The input stream parser used to get text internals.
          */
-        bool parse(readable_reference_t input)
+        bool parse(readable_t& input)
         {
             return input.read_character_data(mData);
         }
@@ -131,7 +123,7 @@ namespace xml {
          *  and returns a pointer to it. It is used when copying element in
          *  parent node.
          */
-        virtual child_pointer_t clone() const
+        virtual child_t* clone() const
         {
             return new text_t(*this);
         }
@@ -142,9 +134,9 @@ namespace xml {
          *  and returns a pointer to it. It is used when copying element in
          *  parent node.
          */
-        virtual child_pointer_t clone(child_move_t rhs) const
+        virtual child_t* clone(child_t&& rhs) const
         {
-            return new text_t(static_cast<text_move_t>(rhs));
+            return new text_t(static_cast<text_t&&>(rhs));
         }
 
         //! \brief Get text content.

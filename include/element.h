@@ -25,29 +25,20 @@ namespace xml {
         typedef          basic_node_interface<charT> node_interface_t; //!< The base type of this node.
         typedef typename node_interface_t::type_t    type_t;           //!< The type of a node type.
 
-        typedef          basic_parent_node<charT>   parent_t;         //!< The parent type.
-        typedef typename parent_t::parent_pointer_t parent_pointer_t; //!< Pointer to \c parent_t.
+        typedef basic_parent_node<charT> parent_t; //!< The parent type.
 
-        typedef          basic_child_node<charT>  child_t;         //!< The child type.
-        typedef typename child_t::child_pointer_t child_pointer_t; //!< Pointer to \c child_t.
-        typedef typename child_t::child_move_t    child_move_t;    //!< Move a \c child_t.
+        typedef basic_child_node<charT> child_t; //!< The child type.
 
         typedef basic_node<charT> node_t; //! The node type.
 
-        typedef basic_element<charT> element_t;                 //!< The type of element this node is.
-        typedef element_t*           element_pointer_t;         //!< Pointer to \c element_t.
-        typedef element_t&           element_reference_t;       //!< Reference to \c element_t.
-        typedef const element_t&     element_const_reference_t; //!< Constant reference to \c element_t.
-        typedef element_t&&          element_move_t;            //!< Move a \c element_t.
+        typedef basic_element<charT> element_t; //!< The type of element this node is.
 
         typedef std::basic_string<charT> string_t; //!< The string type.
 
         typedef basic_attribute<charT> attribute_t;     //!< The attribute type of this element.
         typedef std::set<attribute_t > attribute_set_t; //!< A set of \c basic_attribute.
 
-        typedef          basic_text<charT>              text_t;                 //!< The text type.
-        typedef typename text_t::text_const_reference_t text_const_reference_t; //!< A pointer to \c text_t.
-        typedef typename text_t::text_move_t            text_move_t;            //!< A reference to \c text_t.
+        typedef basic_text<charT> text_t; //!< The text type.
 
         template <class classT = child_t>
         using iterator       = typename parent_t::template iterator<classT>;
@@ -66,7 +57,7 @@ namespace xml {
          */
         basic_element(
             string_t name,
-            parent_pointer_t parent = nullptr)
+            parent_t* parent = nullptr)
         :
             node_t(parent),
             mName(name)
@@ -78,7 +69,7 @@ namespace xml {
          *
          *  \param [in] rhs A constant reference to a \c element_t.
          */
-        basic_element(element_const_reference_t rhs)
+        basic_element(const element_t& rhs)
         :
             node_t(rhs),
             mName(rhs.mName)
@@ -90,7 +81,7 @@ namespace xml {
          *
          *  \param [in] rhs A rvalue reference to a \c element_t.
          */
-        basic_element(element_move_t rhs)
+        basic_element(element_t&& rhs)
         :
             node_t(rhs),
             mName(std::move(rhs.mName))
@@ -120,7 +111,7 @@ namespace xml {
          *  and returns a pointer to it. It is used when copying element in
          *  parent node.
          */
-        virtual child_pointer_t clone() const
+        virtual child_t* clone() const
         {
             return new element_t(*this);
         }
@@ -131,9 +122,9 @@ namespace xml {
          *  and returns a pointer to it. It is used when copying element in
          *  parent node.
          */
-        virtual child_pointer_t clone(child_move_t rhs) const
+        virtual child_t* clone(child_t&& rhs) const
         {
-            return new element_t(static_cast<element_move_t>(rhs));
+            return new element_t(static_cast<element_t&&>(rhs));
         }
 
         //! \brief Get the attributes of an element.
@@ -171,7 +162,7 @@ namespace xml {
          *  \return An \c iterator pointing to the newly inserted element.
          */
         template <class classT = child_t>
-        iterator<classT> insert (iterator<classT> position, element_const_reference_t val)
+        iterator<classT> insert (iterator<classT> position, const element_t& val)
         {
             return parent_t::insert(position, val);
         }
@@ -188,7 +179,7 @@ namespace xml {
          *  \return An \c iterator pointing to the first newly inserted element.
          */
         template <class classT = child_t>
-        iterator<classT> insert (iterator<classT> position, size_t n, element_const_reference_t val)
+        iterator<classT> insert (iterator<classT> position, size_t n, const element_t& val)
         {
             return parent_t::insert(position, n, val);
         }
@@ -224,7 +215,7 @@ namespace xml {
          *  \return An \c iterator pointing to the first newly inserted element.
          */
         template <class classT = child_t>
-        iterator<classT> insert (iterator<classT> position, element_move_t val)
+        iterator<classT> insert (iterator<classT> position, element_t&& val)
         {
             return parent_t::insert(position, std::move(val));
         }
@@ -255,7 +246,7 @@ namespace xml {
          *  \return An \c iterator pointing to the newly inserted element.
          */
         template <class classT = child_t>
-        iterator<classT> push_front (element_const_reference_t val)
+        iterator<classT> push_front (const element_t& val)
         {
             return parent_t::push_front(val);
         }
@@ -270,7 +261,7 @@ namespace xml {
          *  \return An \c iterator pointing to the newly inserted element.
          */
         template <class classT = child_t>
-        iterator<classT> push_front (element_move_t val)
+        iterator<classT> push_front (element_t&& val)
         {
             return parent_t::push_front(std::move(val));
         }
@@ -285,7 +276,7 @@ namespace xml {
          *  \return An \c iterator pointing to the newly inserted element.
          */
         template <class classT = child_t>
-        iterator<classT> push_back (element_const_reference_t val)
+        iterator<classT> push_back (const element_t& val)
         {
             return parent_t::push_back(val);
         }
@@ -300,7 +291,7 @@ namespace xml {
          *  \return An \c iterator pointing to the newly inserted element.
          */
         template <class classT = child_t>
-        iterator<classT> push_back (element_move_t val)
+        iterator<classT> push_back (element_t&& val)
         {
             return parent_t::push_back(std::move(val));
         }
@@ -371,7 +362,7 @@ namespace xml {
          *  \return An \c iterator pointing to the newly inserted element.
          */
         template <class classT = child_t>
-        iterator<classT> insert (iterator<classT> position, text_const_reference_t val)
+        iterator<classT> insert (iterator<classT> position, const text_t& val)
         {
             return parent_t::insert(position, val);
         }
@@ -388,7 +379,7 @@ namespace xml {
          *  \return An \c iterator pointing to the first newly inserted element.
          */
         template <class classT = child_t>
-        iterator<classT> insert (iterator<classT> position, size_t n, text_const_reference_t val)
+        iterator<classT> insert (iterator<classT> position, size_t n, const text_t& val)
         {
             return parent_t::insert(position, n, val);
         }
@@ -424,7 +415,7 @@ namespace xml {
          *  \return An \c iterator pointing to the first newly inserted element.
          */
         template <class classT = child_t>
-        iterator<classT> insert (iterator<classT> position, text_move_t val)
+        iterator<classT> insert (iterator<classT> position, text_t&& val)
         {
             return parent_t::insert(position, std::move(val));
         }
@@ -455,7 +446,7 @@ namespace xml {
          *  \return An \c iterator pointing to the newly inserted element.
          */
         template <class classT = child_t>
-        iterator<classT> push_front (text_const_reference_t val)
+        iterator<classT> push_front (const text_t& val)
         {
             return parent_t::push_front(val);
         }
@@ -470,7 +461,7 @@ namespace xml {
          *  \return An \c iterator pointing to the newly inserted element.
          */
         template <class classT = child_t>
-        iterator<classT> push_front (text_move_t val)
+        iterator<classT> push_front (text_t&& val)
         {
             return parent_t::push_front(std::move(val));
         }
@@ -485,7 +476,7 @@ namespace xml {
          *  \return An \c iterator pointing to the newly inserted element.
          */
         template <class classT = child_t>
-        iterator<classT> push_back (text_const_reference_t val)
+        iterator<classT> push_back (const text_t& val)
         {
             return parent_t::push_back(val);
         }
@@ -500,7 +491,7 @@ namespace xml {
          *  \return An \c iterator pointing to the newly inserted element.
          */
         template <class classT = child_t>
-        iterator<classT> push_back (text_move_t val)
+        iterator<classT> push_back (text_t&& val)
         {
             return parent_t::push_back(std::move(val));
         }

@@ -28,15 +28,9 @@ namespace xml {
         //!@{
         typedef basic_node_interface<charT> node_interface_t; //!< The base type of this node.
 
-        typedef basic_child_node<charT>   child_t;                 //!< The type of children this node is.
-        typedef child_t*                  child_pointer_t;         //!< Pointer to \c child_t.
-        typedef child_t&                  child_reference_t;       //!< Reference to \c child_t.
-        typedef const child_t&            child_const_reference_t; //!< Constant reference to \c child_t.
-        typedef child_t&&                 child_move_t;            //!< Move a \c child_t.
+        typedef basic_child_node<charT> child_t; //!< The type of children this node is.
 
-        typedef          basic_parent_node<charT>     parent_t;           //!< The parent node type.
-        typedef typename parent_t::parent_pointer_t   parent_pointer_t;   //!< A pointer to the parent type.
-        typedef typename parent_t::parent_reference_t parent_reference_t; //!< A reference to the parent type.
+        typedef basic_parent_node<charT> parent_t; //!< The parent node type.
 
         //!@}
 
@@ -47,7 +41,7 @@ namespace xml {
          *
          *  \param[in] parent The parent node of this one.
          */
-        basic_child_node(parent_pointer_t parent = nullptr)
+        basic_child_node(parent_t* parent = nullptr)
         :
             node_interface_t(),
             mParent(parent),
@@ -62,7 +56,7 @@ namespace xml {
          *
          *  \param [in] rhs A constant reference to a \c child_t.
          */
-        basic_child_node(child_const_reference_t rhs)
+        basic_child_node(const child_t& rhs)
         :
             node_interface_t(rhs),
             mParent(nullptr),
@@ -78,7 +72,7 @@ namespace xml {
          *
          *  \param [in] rhs A rvalue reference to a \c child_t.
          */
-        basic_child_node(child_move_t rhs)
+        basic_child_node(child_t&& rhs)
         :
             node_interface_t(rhs),
             mParent(rhs.mParent),
@@ -113,7 +107,7 @@ namespace xml {
          *  and returns a pointer to it. It is used when copying element in
          *  parent node.
          */
-        virtual child_pointer_t clone() const = 0;
+        virtual child_t* clone() const = 0;
 
         //! \brief Clone the given \c basic_child_node using move syntax.
         /*!
@@ -121,7 +115,7 @@ namespace xml {
          *  and returns a pointer to it. It is used when copying element in
          *  parent node.
          */
-        virtual child_pointer_t clone(child_move_t rhs) const = 0;
+        virtual child_t* clone(child_t&& rhs) const = 0;
 
         //! \brief Returns the node's parent.
         /*!
@@ -131,7 +125,7 @@ namespace xml {
          *
          *  \return A \c const reference to the node's parent.
          */
-        const parent_reference_t parent() const { return *mParent; }
+        const parent_t& parent() const { return *mParent; }
 
         //! \brief Returns the node's parent.
         /*!
@@ -141,13 +135,13 @@ namespace xml {
          *
          *  \return A reference to the node's parent.
          */
-        parent_reference_t parent() { return *mParent; }
+        parent_t& parent() { return *mParent; }
 
     protected:
-        parent_pointer_t mParent;  //!< A pointer to the current node's parent
+        parent_t* mParent;  //!< A pointer to the current node's parent
 
-        child_pointer_t mPrevious; //!< A pointer to the current previous node sibling. Might be \c null
-        child_pointer_t mNext;     //!< A pointer to the current next node sibling. Might be \c null
+        child_t* mPrevious; //!< A pointer to the current previous node sibling. Might be \c null
+        child_t* mNext;     //!< A pointer to the current next node sibling. Might be \c null
 
         template <typename charU, class classT>
         friend class xml::basic_iterator;

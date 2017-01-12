@@ -12,8 +12,6 @@ public:
 
     typedef          xml::basic_parent_node<charT> parent_t;
     typedef typename parent_t::child_t             child_t;
-    typedef typename parent_t::child_pointer_t     child_pointer_t;   //!< Pointer to \c child_t.
-    typedef typename parent_t::child_reference_t   child_reference_t; //!< Reference to \c child_t.
 
     template <class classT = child_t>
     using iterator = typename parent_t::template iterator<classT>;
@@ -40,12 +38,12 @@ public:
         return node_interface_t::stringToType("parent-node-stub");
     }
 
-    child_pointer_t& first ()
+    child_t*& first ()
     {
         return parent_t::mFirst;
     }
 
-    child_pointer_t& last ()
+    child_t*& last ()
     {
         return parent_t::mLast;
     }

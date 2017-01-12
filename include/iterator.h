@@ -41,8 +41,7 @@ namespace xml {
         typedef typename std::iterator<std::bidirectional_iterator_tag, classT>::pointer   pointer_t;    //!< Pointer to a \c classT
         typedef typename std::iterator<std::bidirectional_iterator_tag, classT>::reference reference_t;  //!< Reference to a \c classT
 
-        typedef          basic_child_node<charT> child_t;
-        typedef          child_t*                child_pointer_t;
+        typedef basic_child_node<charT> child_t;
 
         //!@}
 
@@ -52,7 +51,7 @@ namespace xml {
          *
          *  \param [in] ptr A pointer this \c basic_iterator will point to.
          */
-        basic_iterator(child_pointer_t ptr)
+        basic_iterator(child_t* ptr)
         :
             mPtr(findNext(ptr))
         {}
@@ -224,7 +223,7 @@ namespace xml {
          *
          *  \return Next pointer to a \c pointer_t, or \c nullptr.
          */
-        static child_pointer_t findNext(child_pointer_t cptr)
+        static child_t* findNext(child_t* cptr)
         {
             pointer_t ptr = static_cast<pointer_t>(cptr);
 
@@ -246,7 +245,7 @@ namespace xml {
          *
          *  \return Previous pointer to a \c pointer_t, or \c nullptr.
          */
-        static child_pointer_t findPrevious(child_pointer_t cptr)
+        static child_t* findPrevious(child_t* cptr)
         {
             pointer_t ptr = static_cast<pointer_t>(cptr);
 
@@ -258,7 +257,7 @@ namespace xml {
             return cptr;
         }
 
-        child_pointer_t mPtr; //!< A pointer to the current item this \c basic_iterator points to.
+        child_t* mPtr; //!< A pointer to the current item this \c basic_iterator points to.
 
         friend class basic_parent_node<charT>;
 

@@ -17,11 +17,7 @@ namespace xml {
         typedef std::basic_istream<charT>  istream_t;
         typedef std::list<string_t>        string_list_t;
 
-        typedef basic_readable<charT> readable_t;                 //!< The type of readable.
-        typedef readable_t*           readable_pointer_t;         //!< Pointer to \c readable_t.
-        typedef readable_t&           readable_reference_t;       //!< Reference to \c readable_t.
-        typedef const readable_t&     readable_const_reference_t; //!< Constant reference to \c readable_t.
-        typedef readable_t&&          readable_move_t;            //!< Move a \c readable_t.
+        typedef basic_readable<charT> readable_t; //!< The type of readable.
 
         basic_readable(istream_t& input)
         :

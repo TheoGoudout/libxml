@@ -18,16 +18,11 @@ namespace xml {
     public:
         //! \name Member types
         //!@{
-        typedef          basic_parent_node<charT>   parent_t;         //!< The parent node type.
-        typedef typename parent_t::parent_pointer_t parent_pointer_t; //!< A pointer to the parent type.
+        typedef basic_parent_node<charT> parent_t; //!< The parent node type.
 
         typedef basic_child_node<charT> child_t; //!< The type of children this node is.
 
-        typedef basic_node<charT> node_t;                 //!< The type of node_t this node is.
-        typedef node_t*           node_pointer_t;         //!< Pointer to \c node_t.
-        typedef node_t&           node_reference_t;       //!< Reference to \c node_t.
-        typedef const node_t&     node_const_reference_t; //!< Constant reference to \c node_t.
-        typedef node_t&&          node_move_t;            //!< Move a \c node_t.
+        typedef basic_node<charT> node_t; //!< The type of node_t this node is.
 
         //!@}
 
@@ -38,7 +33,7 @@ namespace xml {
          *
          *  \param[in] parent The parent node of this one.
          */
-        basic_node(parent_pointer_t parent = nullptr)
+        basic_node(parent_t* parent = nullptr)
         :
             parent_t(),
             child_t(parent)
@@ -51,7 +46,7 @@ namespace xml {
          *
          *  \param [in] rhs A constant reference to a \c node_t.
          */
-        basic_node(node_const_reference_t rhs)
+        basic_node(const node_t& rhs)
         :
             parent_t(rhs),
             child_t(rhs)
@@ -65,7 +60,7 @@ namespace xml {
          *
          *  \param [in] rhs A rvalue reference to a \c child_t.
          */
-        basic_node(node_move_t rhs)
+        basic_node(node_t&& rhs)
         :
             parent_t(rhs),
             child_t(rhs)

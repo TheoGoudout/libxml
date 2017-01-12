@@ -20,16 +20,11 @@ namespace xml {
     public:
         //! \name Member types
         //!@{
-        typedef std::basic_string<charT>  string_t;  //!< The type of string to parse
+        typedef std::basic_string<charT> string_t;  //!< The type of string to parse
 
-        typedef basic_attribute<charT> attribute_t;                 //!< The type of attribute.
-        typedef attribute_t*           attribute_pointer_t;         //!< Pointer to \c attribute_t.
-        typedef attribute_t&           attribute_reference_t;       //!< Reference to \c attribute_t.
-        typedef const attribute_t&     attribute_const_reference_t; //!< Constant reference to \c attribute_t.
-        typedef attribute_t&&          attribute_move_t;            //!< Move a \c attribute_t.
+        typedef basic_attribute<charT> attribute_t; //!< The type of attribute.
 
-        typedef          basic_readable<charT>            readable_t;           //!< The type of readable.
-        typedef typename readable_t::readable_reference_t readable_reference_t; //!< Pointer to \c child_t.
+        typedef basic_readable<charT> readable_t; //!< The type of readable.
 
         //!@}
 
@@ -54,7 +49,7 @@ namespace xml {
          *
          *  \param [in] rhs A constant reference to a \c attribute_t.
          */
-        basic_attribute(attribute_const_reference_t rhs)
+        basic_attribute(const attribute_t& rhs)
         :
             mName(rhs.mName),
             mValue(rhs.mValue)
@@ -66,7 +61,7 @@ namespace xml {
          *
          *  \param [in] rhs A rvalue reference to a \c attribute_t.
          */
-        basic_attribute(attribute_move_t rhs)
+        basic_attribute(attribute_t&& rhs)
         :
             mName(std::move(rhs.mName)),
             mValue(std::move(rhs.mValue))
@@ -78,7 +73,7 @@ namespace xml {
          *
          *  \param [in] input The input stream parser used to get attribute internals.
          */
-        basic_attribute(readable_reference_t input)
+        basic_attribute(readable_t& input)
         {
             if (!parse(input))
                 throw -1; // TODO : throw parsing exception
@@ -97,7 +92,7 @@ namespace xml {
          *
          *  \param [in] input The input stream parser used to get attribute internals.
          */
-        bool parse(readable_reference_t input)
+        bool parse(readable_t& input)
         {
             return input.read_name_and_quoted_value(
                 &readable_t::read_name,            mName,
