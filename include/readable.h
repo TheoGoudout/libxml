@@ -8,10 +8,16 @@
 #include <stack>
 #include <algorithm>
 
+#include <exception.h>
+
 namespace xml {
     template <typename charT>
     class basic_readable {
     public:
+        typedef std::streamoff line_t;
+        typedef size_t         column_t;
+        typedef std::streampos index_t;
+
         typedef charT                      char_t;
         typedef std::basic_string<charT>   string_t;
         typedef std::basic_istream<charT>  istream_t;
@@ -22,7 +28,8 @@ namespace xml {
         basic_readable(istream_t& input)
         :
             mInput(input),
-            mCurrentState(0, 0, mInput.tellg())
+            mCurrentState(0, 0, mInput.tellg()),
+            mLastError(parsing_exception::create_parsing_exception("Unknown error"))
         {
             if (mInput.fail() || mInput.bad()) {
                 throw -1; // TODO : exception
@@ -31,6 +38,12 @@ namespace xml {
             } else {
                 throw -1; // TODO : assert
             }
+        }
+
+        ~basic_readable()
+        {
+            if (nullptr != mLastError)
+                delete mLastError;
         }
 
         void push()
@@ -50,12 +63,35 @@ namespace xml {
             mSavedStates.pop();
         }
 
+        line_t get_current_line()
+        {
+            return std::get<0>(mCurrentState) + 1;
+        }
+
+        column_t get_current_col()
+        {
+            return std::get<1>(mCurrentState) + 1;
+        }
+
+        const parsing_exception& get_last_error()
+        {
+            return *mLastError;
+        }
+
+        void throw_last_error()
+        {
+            throw mLastError;
+        }
+
+        void set_error(parsing_exception* error)
+        {
+            if (nullptr != mLastError)
+                delete mLastError;
+
+            mLastError = error;
+        }
 
     private:
-        typedef std::streamoff line_t;
-        typedef size_t         column_t;
-        typedef std::streampos index_t;
-
         typedef std::tuple<line_t, column_t, index_t> state_t;
         typedef std::stack<state_t>                   state_stack_t;
 
@@ -65,6 +101,8 @@ namespace xml {
 
         state_stack_t mSavedStates;
         state_t       mCurrentState;
+
+        parsing_exception* mLastError;
 
         index_t tell()
         {
@@ -145,9 +183,19 @@ namespace xml {
         }
 
     public:
-        bool match(const char_t c, char_t& res)
+        bool match(const char_t c, char_t& res, bool saveError = true)
         {
             if (peek() != c) {
+                if (saveError)
+                    set_error(
+                        parsing_exception::create_parsing_exception(
+                            "Expected '%c' character (at line %d col %d)",
+                            c,
+                            get_current_line(),
+                            get_current_col()
+                        )
+                    );
+
                 return false;
             }
 
@@ -155,16 +203,31 @@ namespace xml {
             return true;
         }
 
-        bool match(const string_t& str, string_t& res)
+        bool match(const char_t c, bool saveError = true)
+        {
+            char_t res;
+            return match(c, res, saveError);
+        }
+
+        bool match(const string_t& str, string_t& res, bool saveError = true)
         {
             char_t c;
             res.clear();
             push();
 
             for(auto it = str.begin(); it != str.end(); ++it) {
-                if (!match(*it, c)) {
+                if (!match(*it, c, false)) {
                     pop();
-                    res.clear();
+                    if (saveError)
+                        set_error(
+                            parsing_exception::create_parsing_exception(
+                                "Expected '%s' string (at line %d col %d)",
+                                string_t(str.begin(), str.end()),
+                                get_current_line(),
+                                get_current_col()
+                            )
+                        );
+
                     return false;
                 } else {
                     res += c;
@@ -175,18 +238,57 @@ namespace xml {
             return true;
         }
 
-        bool match_in(const char_t c1, const char_t c2, char_t& res)
+        bool match(const string_t& str, bool saveError = true)
         {
-            char_t p = peek();
-            if (p < c1 || p > c2) {
-                return false;
-            }
-
-            res = read();
-            return true;
+            string_t res;
+            return match(str, res, saveError);
         }
 
-        bool match_in(const string_t& arr, char_t& res)
+        bool match_name(string_t& name, bool saveError = true)
+        {
+            if (!match(name, false))
+                goto error;
+
+            return true;
+
+        error:
+            if (saveError)
+                set_error(
+                    parsing_exception::create_parsing_exception(
+                        "Expected name to be '%s' (at line %d col %d)",
+                        std::string(name.begin(), name.end()).c_str(),
+                        get_current_line(),
+                        get_current_col()
+                    )
+                );
+
+            return false;
+        }
+
+
+        bool match_in(const char_t c1, const char_t c2, char_t& res, bool saveError = true)
+        {
+            char_t p = peek();
+            if (p >= c1 && p <= c2) {
+                res = read();
+                return true;
+            }
+
+            if (saveError)
+                set_error(
+                    parsing_exception::create_parsing_exception(
+                        "Expected char between '%c' and '%c' (at line %d col %d)",
+                        c1,
+                        c2,
+                        get_current_line(),
+                        get_current_col()
+                    )
+                );
+
+            return false;
+        }
+
+        bool match_in(const string_t& arr, char_t& res, bool saveError = true)
         {
             char_t p = peek();
             for(auto it = arr.begin(); it != arr.end(); ++it) {
@@ -196,19 +298,38 @@ namespace xml {
                 }
             }
 
+            if (saveError)
+                set_error(
+                    parsing_exception::create_parsing_exception(
+                        "Expected char in '%s' (at line %d col %d)",
+                        string_t(arr.begin(), arr.end()),
+                        get_current_line(),
+                        get_current_col()
+                    )
+                );
+
             return false;
         }
 
-        bool match_not(const char_t c)
+        bool match_not(const char_t c, bool saveError = true)
         {
-            if (peek() == c) {
-                return false;
-            }
+            if (peek() != c)
+                return true;
 
-            return true;
+            if (saveError)
+                set_error(
+                    parsing_exception::create_parsing_exception(
+                        "Expected char not '%c' (at line %d col %d)",
+                        c,
+                        get_current_line(),
+                        get_current_col()
+                    )
+                );
+
+            return false;
         }
 
-        bool match_not(const string_t& str)
+        bool match_not(const string_t& str, bool saveError = true)
         {
             char_t c;
             push();
@@ -221,25 +342,57 @@ namespace xml {
             }
 
             pop();
+
+            if (saveError)
+                set_error(
+                    parsing_exception::create_parsing_exception(
+                        "Expected string not '%s' (at line %d col %d)",
+                        string_t(str.begin(), str.end()),
+                        get_current_line(),
+                        get_current_col()
+                    )
+                );
+
             return false;
         }
 
-        bool match_not_in(const char_t c1, const char_t c2, char_t& res)
+        bool match_not_in(const char_t c1, const char_t c2, char_t& res, bool saveError = true)
         {
             char_t p = peek();
-            if (p >= c1 && p <= c2) {
-                return false;
+            if (p < c1 || p > c2) {
+                res = read();
+                return true;
             }
 
-            res = read();
-            return true;
+            if (saveError)
+                set_error(
+                    parsing_exception::create_parsing_exception(
+                        "Expected char not between '%c' and '%c' (at line %d col %d)",
+                        c1,
+                        c2,
+                        get_current_line(),
+                        get_current_col()
+                    )
+                );
+
+            return false;
         }
 
-        bool match_not_in(const string_t& arr, char_t& res)
+        bool match_not_in(const string_t& arr, char_t& res, bool saveError = true)
         {
             char_t p = peek();
             for(auto it = arr.begin(); it != arr.end(); ++it) {
                 if (p == *it) {
+                    if (saveError)
+                        set_error(
+                            parsing_exception::create_parsing_exception(
+                                "Expected char not in '%s' (at line %d col %d)",
+                                string_t(arr.begin(), arr.end()),
+                                get_current_line(),
+                                get_current_col()
+                            )
+                        );
+
                     return false;
                 }
             }
@@ -248,172 +401,288 @@ namespace xml {
             return true;
         }
 
-        bool read_eof()
+        bool read_eof(bool saveError = true)
         {
             char_t c;
-            return match('\0', c);
-        }
-
-        bool read_upper_letter(char_t& c)
-        {
-            return match_in('A', 'Z', c);
-        }
-
-        bool read_lower_letter(char_t& c)
-        {
-            return match_in('a', 'z', c);
-        }
-
-        bool read_digit(char_t& c)
-        {
-            return match_in('0', '9', c);
-        }
-
-        bool read_hexa_char(char_t& c)
-        {
-            return
-                match_in('0', '9', c) ||
-                match_in('a', 'f', c) ||
-                match_in('A', 'F', c);
-        }
-
-        bool read_quote(char_t& c)
-        {
-            return match_in({'\'', '"'}, c);
-        }
-
-
-        bool read_char(char_t& c)
-        {
-            if (match_in({0x9, 0xA, 0xD}, c))
+            if (match('\0', c, false))
                 return true;
 
-            if (match_in(0x20, 0xFF, c))
+            if (saveError)
+                set_error(
+                    parsing_exception::create_parsing_exception(
+                        "Expected EOF (at line %d col %d)",
+                        get_current_line(),
+                        get_current_col()
+                    )
+                );
+
+            return false;
+        }
+
+        bool read_upper_letter(char_t& c, bool saveError = true)
+        {
+            if (match_in('A', 'Z', c, false))
+                return true;
+
+            if (saveError)
+                set_error(
+                    parsing_exception::create_parsing_exception(
+                        "Expected upper case letter (at line %d col %d)",
+                        get_current_line(),
+                        get_current_col()
+                    )
+                );
+
+            return false;
+        }
+
+        bool read_lower_letter(char_t& c, bool saveError = true)
+        {
+            if (match_in('a', 'z', c, false))
+                return true;
+
+            if (saveError)
+                set_error(
+                    parsing_exception::create_parsing_exception(
+                        "Expected lower case letter (at line %d col %d)",
+                        get_current_line(),
+                        get_current_col()
+                    )
+                );
+
+            return false;
+        }
+
+        bool read_digit(char_t& c, bool saveError = true)
+        {
+            if (match_in('0', '9', c, false))
+                return true;
+
+            if (saveError)
+                set_error(
+                    parsing_exception::create_parsing_exception(
+                        "Expected digit (at line %d col %d)",
+                        get_current_line(),
+                        get_current_col()
+                    )
+                );
+
+            return false;
+        }
+
+        bool read_hexa_char(char_t& c, bool saveError = true)
+        {
+            bool ret =
+                match_in('0', '9', c, false) ||
+                match_in('a', 'f', c, false) ||
+                match_in('A', 'F', c, false);
+
+            if (ret)
+                return true;
+
+            if (saveError)
+                set_error(
+                    parsing_exception::create_parsing_exception(
+                        "Expected hexa char (at line %d col %d)",
+                        get_current_line(),
+                        get_current_col()
+                    )
+                );
+
+            return false;
+        }
+
+        bool read_quote(char_t& c, bool saveError = true)
+        {
+            if (match_in({'\'', '"'}, c, false))
+                return true;
+
+            if (saveError)
+                set_error(
+                    parsing_exception::create_parsing_exception(
+                        "Expected quote (at line %d col %d)",
+                        get_current_line(),
+                        get_current_col()
+                    )
+                );
+
+            return false;
+        }
+
+
+        bool read_char(char_t& c, bool saveError = true)
+        {
+            if (match_in({0x9, 0xA, 0xD}, c, false))
+                return true;
+
+            if (match_in(0x20, 0xFF, c, false))
                 return true;
 
             if (std::numeric_limits<char_t>::max() <= 0xFF)
-                return false;
+                goto error;
 
-            if (match_in((char_t)0x100, (char_t)0xD7FF, c))
+            if (match_in((char_t)0x100, (char_t)0xD7FF, c, false))
                 return true;
 
-            if (match_in((char_t)0xE000, (char_t)0xFFFD, c))
+            if (match_in((char_t)0xE000, (char_t)0xFFFD, c, false))
                 return true;
 
             if (std::numeric_limits<char_t>::max() <= 0xFFFF)
-                return false;
+                goto error;
 
-            if (match_in((char_t)0x10000, (char_t)0x10FFFF, c))
+            if (match_in((char_t)0x10000, (char_t)0x10FFFF, c, false))
                 return true;
+
+        error:
+            if (saveError)
+                set_error(
+                    parsing_exception::create_parsing_exception(
+                        "Expected valid XML char (at line %d col %d)",
+                        get_current_line(),
+                        get_current_col()
+                    )
+                );
 
             return false;
         }
 
-        bool read_space(char_t& c)
+        bool read_space(char_t& c, bool saveError = true)
         {
-            return match_in({0x9, 0xA, 0xD, 0x20}, c);
+            if (match_in({0x9, 0xA, 0xD, 0x20}, c, false))
+                return true;
+
+            if (saveError)
+                set_error(
+                    parsing_exception::create_parsing_exception(
+                        "Expected space (at line %d col %d)",
+                        get_current_line(),
+                        get_current_col()
+                    )
+                );
+
+            return false;
         }
 
-        bool read_name_start_char(char_t& c)
+        bool read_name_start_char(char_t& c, bool saveError = true)
         {
-            if (match(':', c))
+            if (match(':', c, false))
                 return true;
 
-            if (read_upper_letter(c))
+            if (read_upper_letter(c, false))
                 return true;
 
-            if (match('_', c))
+            if (match('_', c, false))
                 return true;
 
-            if (read_lower_letter(c))
+            if (read_lower_letter(c, false))
                 return true;
 
-            if (match_in(0xC0, 0xD6, c))
+            if (match_in(0xC0, 0xD6, c, false))
                 return true;
 
-            if (match_in(0xD8, 0xF6, c))
+            if (match_in(0xD8, 0xF6, c, false))
                 return true;
 
-            if (match_in(0xF8, 0xFF, c))
+            if (match_in(0xF8, 0xFF, c, false))
                 return true;
 
             if (std::numeric_limits<char_t>::max() <= 0xFF)
-                return false;
+                goto error;
 
-            if (match_in((char_t)0x100, (char_t)0x2FF, c))
+            if (match_in((char_t)0x100, (char_t)0x2FF, c, false))
                 return true;
 
-            if (match_in((char_t)0x370, (char_t)0x37D, c))
+            if (match_in((char_t)0x370, (char_t)0x37D, c, false))
                 return true;
 
-            if (match_in((char_t)0x37F, (char_t)0x1FFF, c))
+            if (match_in((char_t)0x37F, (char_t)0x1FFF, c, false))
                 return true;
 
-            if (match_in((char_t)0x200C, (char_t)0x200D, c))
+            if (match_in((char_t)0x200C, (char_t)0x200D, c, false))
                 return true;
 
-            if (match_in((char_t)0x2070, (char_t)0x218F, c))
+            if (match_in((char_t)0x2070, (char_t)0x218F, c, false))
                 return true;
 
-            if (match_in((char_t)0x2C00, (char_t)0x2FEF, c))
+            if (match_in((char_t)0x2C00, (char_t)0x2FEF, c, false))
                 return true;
 
-            if (match_in((char_t)0x3001, (char_t)0xD7FF, c))
+            if (match_in((char_t)0x3001, (char_t)0xD7FF, c, false))
                 return true;
 
-            if (match_in((char_t)0xF900, (char_t)0xFDCF, c))
+            if (match_in((char_t)0xF900, (char_t)0xFDCF, c, false))
                 return true;
 
-            if (match_in((char_t)0xFDF0, (char_t)0xFFFD, c))
+            if (match_in((char_t)0xFDF0, (char_t)0xFFFD, c, false))
                 return true;
 
             if (std::numeric_limits<char_t>::max() <= 0xFFFF)
-                return false;
+                goto error;
 
-            if (match_in((char_t)0x10000, (char_t)0xEFFFF, c))
+            if (match_in((char_t)0x10000, (char_t)0xEFFFF, c, false))
                 return true;
+
+        error:
+            if (saveError)
+                set_error(
+                    parsing_exception::create_parsing_exception(
+                        "Expected valid XML name start char (at line %d col %d)",
+                        get_current_line(),
+                        get_current_col()
+                    )
+                );
 
             return false;
         }
 
-        bool read_name_char(char_t& c)
+        bool read_name_char(char_t& c, bool saveError = true)
         {
-            if(read_name_start_char(c))
+            if(read_name_start_char(c, false))
                 return true;
 
-            if(match('-', c))
+            if(match('-', c, false))
                 return true;
 
-            if(match('.', c))
+            if(match('.', c, false))
                 return true;
 
-            if(read_digit(c))
+            if(read_digit(c, false))
                 return true;
 
-            if(match(0xB7, c))
+            if(match(0xB7, c, false))
                 return true;
 
             if (std::numeric_limits<char_t>::max() <= 0xFF)
-                return false;
+                goto error;
 
-            if(match_in((char_t)0x300, (char_t)0x36F, c))
+            if(match_in((char_t)0x300, (char_t)0x36F, c, false))
                 return true;
 
-            if(match_in((char_t)0x203F, (char_t)0x2040, c))
+            if(match_in((char_t)0x203F, (char_t)0x2040, c, false))
                 return true;
+
+        error:
+            if (saveError)
+                set_error(
+                    parsing_exception::create_parsing_exception(
+                        "Expected valid XML name char (at line %d col %d)",
+                        get_current_line(),
+                        get_current_col()
+                    )
+                );
 
             return false;
         }
 
-        bool read_public_id_char(char_t& c)
+        bool read_public_id_char(char_t& c, bool saveError = true)
         {
-            return
-                match(0x20, c) ||
-                match(0xD, c) ||
-                match(0xA, c) ||
-                read_upper_letter(c) ||
-                read_lower_letter(c) ||
-                read_digit(c) ||
+            bool ret = 
+                match(0x20, c, false) ||
+                match(0xD, c, false) ||
+                match(0xA, c, false) ||
+                read_upper_letter(c, false) ||
+                read_lower_letter(c, false) ||
+                read_digit(c, false) ||
                 match_in(
                     {
                         '-',
@@ -436,31 +705,212 @@ namespace xml {
                         '_',
                         '%',
                         '"'
-                    }, c);
+                    }, c, false);
+
+            if (ret)
+                return true;
+
+            if (saveError)
+                set_error(
+                    parsing_exception::create_parsing_exception(
+                        "Expected valid XML public ID char (at line %d col %d)",
+                        get_current_line(),
+                        get_current_col()
+                    )
+                );
+
+            return false;
         }
 
-        bool read_spaces()
+        bool read_spaces(bool saveError = true)
         {
             char_t c;
-            if (!read_space(c))
-                return false;
+            if (!read_space(c, false))
+            {
+                if (saveError)
+                set_error(
+                    parsing_exception::create_parsing_exception(
+                        "Expected spaces (at line %d col %d)",
+                        get_current_line(),
+                        get_current_col()
+                    )
+                );
 
-            while(read_space(c));
+                return false;
+            }
+
+            while(read_space(c, false));
 
             return true;
         }
 
-        bool read_name(string_t& name)
+        bool read_eq(bool saveError = true)
+        {
+            char_t c;
+
+            push();
+
+            read_spaces(false);
+
+            if (!match('=', c, false))
+                goto error;
+
+            read_spaces(false);
+
+            drop();
+            return true;
+
+        error:
+            pop();
+
+            if (saveError)
+                set_error(
+                    parsing_exception::create_parsing_exception(
+                        "Expected '=' symbol (at line %d col %d)",
+                        get_current_line(),
+                        get_current_col()
+                    )
+                );
+            return false;
+        }
+
+        bool read_number(uint8_t& number, bool saveError = true)
+        {
+            char_t c;
+            number = 0;
+
+            push();
+
+            if (!read_digit(c, false))
+                goto error;
+            number = c - '0';
+
+            while(read_digit(c, false))
+                number = (number * 10) + (c - '0');
+
+            drop();
+            return true;
+
+        error:
+            number = 0;
+            pop();
+
+            if (saveError)
+                set_error(
+                    parsing_exception::create_parsing_exception(
+                        "Expected number (at line %d col %d)",
+                        get_current_line(),
+                        get_current_col()
+                    )
+                );
+
+            return false;
+        }
+
+        bool read_version(const char quote, uint8_t& major, uint8_t& minor, bool saveError = true)
+        {
+            push();
+
+            if (!read_number(major, false))
+                goto error;
+
+            if (!match('.', false))
+                goto error;
+
+            if (!read_number(minor, false))
+                goto error;
+
+            drop();
+            return true;
+
+        error:
+            pop();
+
+            if (saveError)
+                set_error(
+                    parsing_exception::create_parsing_exception(
+                        "Expected version (at line %d col %d)",
+                        get_current_line(),
+                        get_current_col()
+                    )
+                );
+            return false;
+        }
+
+        bool read_encoding(const char_t quote, string_t& str, bool saveError = true)
+        {
+            char_t c;
+            str.clear();
+            push();
+
+            if (!read_lower_letter(c, false) && !read_upper_letter(c, false))
+                goto error;
+            str += c;
+
+            while (
+                read_lower_letter(c, false) || 
+                read_upper_letter(c, false) ||
+                read_digit(c, false) ||
+                match('.', c, false) ||
+                match('_', c, false) ||
+                match('-', c, false))
+                str += c;
+
+            drop();
+            return true;
+
+        error:
+            pop();
+
+            if (saveError)
+                set_error(
+                    parsing_exception::create_parsing_exception(
+                        "Expected valid XML encoding name (at line %d col %d)",
+                        get_current_line(),
+                        get_current_col()
+                    )
+                );
+
+            return false;
+        }
+
+        bool read_yes_no(const char_t quote, bool& yesOrNo, bool saveError = true)
+        {
+            if (match(string_t({'y', 'e', 's'}), false))
+            {
+                yesOrNo = true;
+                return true;
+            }
+
+            if (match(string_t({'n', 'o'}), false))
+            {
+                yesOrNo = false;
+                return true;
+            }
+
+            if (saveError)
+                set_error(
+                    parsing_exception::create_parsing_exception(
+                        "Expected 'yes' or 'no' value (at line %d col %d)",
+                        get_current_line(),
+                        get_current_col()
+                    )
+                );
+
+            return false;
+        }
+
+        bool read_name(string_t& name, bool saveError = true)
         {
             char_t c;
             name.clear();
             push();
 
-            if (!read_name_start_char(c))
+            if (!read_name_start_char(c, false))
                 goto error;
             name += c;
 
-            while(read_name_char(c))
+            while(read_name_char(c, false))
                 name += c;
 
             drop();
@@ -469,21 +919,31 @@ namespace xml {
         error:
             name.clear();
             pop();
+
+            if (saveError)
+                set_error(
+                    parsing_exception::create_parsing_exception(
+                        "Expected valid XML name (at line %d col %d)",
+                        get_current_line(),
+                        get_current_col()
+                    )
+                );
+
             return false;
         }
 
-        bool read_names(string_list_t& names)
+        bool read_names(string_list_t& names, bool saveError = true)
         {
             char_t c;
             string_t name;
             names.clear();
             push();
 
-            if (!read_name(name))
+            if (!read_name(name, false))
                 goto error;
             names.push_back(name);
 
-            while (match(0x20, c) && read_name(name))
+            while (match(0x20, c, false) && read_name(name, false))
                 names.push_back(name);
 
             drop();
@@ -492,20 +952,30 @@ namespace xml {
         error:
             names.clear();
             pop();
+
+            if (saveError)
+                set_error(
+                    parsing_exception::create_parsing_exception(
+                        "Expected valid XML names (at line %d col %d)",
+                        get_current_line(),
+                        get_current_col()
+                    )
+                );
+
             return false;
         }
 
-        bool read_token(string_t& token)
+        bool read_token(string_t& token, bool saveError = true)
         {
             char_t c;
             token.clear();
             push();
 
-            if (!read_name_char(c))
+            if (!read_name_char(c, false))
                 goto error;
             token += c;
 
-            while(read_name_char(c))
+            while(read_name_char(c, false))
                 token += c;
 
             drop();
@@ -514,22 +984,32 @@ namespace xml {
         error:
             token.clear();
             pop();
+
+            if (saveError)
+                set_error(
+                    parsing_exception::create_parsing_exception(
+                        "Expected valid XML token (at line %d col %d)",
+                        get_current_line(),
+                        get_current_col()
+                    )
+                );
+
             return false;
 
         }
 
-        bool read_tokens(string_list_t& tokens)
+        bool read_tokens(string_list_t& tokens, bool saveError = true)
         {
             char_t c;
             string_t token;
             tokens.clear();
             push();
 
-            if (!read_token(token))
+            if (!read_token(token, false))
                 goto error;
             tokens.push_back(token);
 
-            while (match(0x20, c) && read_token(token))
+            while (match(0x20, c, false) && read_token(token, false))
                 tokens.push_back(token);
 
             drop();
@@ -538,37 +1018,46 @@ namespace xml {
         error:
             tokens.clear();
             pop();
+
+            if (saveError)
+                set_error(
+                    parsing_exception::create_parsing_exception(
+                        "Expected valid XML tokens (at line %d col %d)",
+                        get_current_line(),
+                        get_current_col()
+                    )
+                );
+
             return false;
         }
 
-        bool read_character_data(string_t& data)
+        bool read_character_data(string_t& data, bool saveError = true)
         {
             char_t c;
             data.clear();
 
-            while (match_not({']', ']', '>'}) && match_not_in({'<', '&'}, c))
+            while (match_not({']', ']', '>'}, false) && match_not_in({'<', '&'}, c), false)
                 data += c;
 
             return true;
         }
 
-        bool read_comment(string_t& comment)
+        bool read_comment(string_t& comment, bool saveError = true)
         {
             char_t c;
-            string_t dummy;
             comment.clear();
             push();
 
-            if(!match({'<', '!', '-', '-'}, dummy))
+            if(!match({'<', '!', '-', '-'}, false))
                 goto error;
 
-            while(match_not({'-', '-', '>'}) && read_char(c))
-                if (c == '-' && !match_not({'-', '-', '>'}))
+            while(match_not({'-', '-', '>'}, false) && read_char(c, false))
+                if (c == '-' && !match_not({'-', '-', '>'}, false))
                     goto error;
                 else
                     comment += c;
 
-            if(!match({'-', '-', '>'}, dummy))
+            if(!match({'-', '-', '>'}, false))
                 goto error;
 
             drop();
@@ -577,26 +1066,36 @@ namespace xml {
         error:
             comment.clear();
             pop();
+
+            if (saveError)
+                set_error(
+                    parsing_exception::create_parsing_exception(
+                        "Expected valid XML comment (at line %d col %d)",
+                        get_current_line(),
+                        get_current_col()
+                    )
+                );
+
             return false;
         }
 
-        bool read_processing_instructions_content(string_t& content)
+        bool read_processing_instructions_content(string_t& content, bool saveError = true)
         {
             char_t c;
             content.clear();
 
-            while (match_not({'?', '>'}) && read_char(c))
+            while (match_not({'?', '>'}, false) && read_char(c, false))
                 content += c;
 
             return true;
         }
 
-        bool read_processing_instructions_target(string_t& target)
+        bool read_processing_instructions_target(string_t& target, bool saveError = true)
         {
             target.clear();
             push();
 
-            if (!read_name(target))
+            if (!read_name(target, false))
                 return false;
 
             string_t xml({'x', 'm', 'l'});
@@ -624,41 +1123,51 @@ namespace xml {
         error:
             target.clear();
             pop();
+
+            if (saveError)
+                set_error(
+                    parsing_exception::create_parsing_exception(
+                        "Expected valid XML processing instructions target (at line %d col %d)",
+                        get_current_line(),
+                        get_current_col()
+                    )
+                );
+
             return false;
         }
 
-        bool read_cdata(string_t& cdata)
+        bool read_cdata(string_t& cdata, bool saveError = true)
         {
             char_t c;
             cdata.clear();
 
-            while (match_not({']', ']', '>'}) && read_char(c))
+            while (match_not({']', ']', '>'}, false) && read_char(c, false))
                 cdata += c;
 
             return true;
         }
 
-        bool read_reference(string_t& ref)
+        bool read_reference(string_t& ref, bool saveError = true)
         {
-            return read_entity_reference(ref) || read_char_reference(ref);
+            return read_entity_reference(ref, saveError) || read_char_reference(ref, saveError);
         }
 
-        bool read_entity_reference(string_t& ref)
+        bool read_entity_reference(string_t& ref, bool saveError = true)
         {
             char_t c;
             string_t name;
             ref.clear();
             push();
 
-            if (!match('&', c))
+            if (!match('&', c, false))
                 goto error;
             ref += c;
 
-            if (!read_name(name))
+            if (!read_name(name, false))
                 goto error;
             ref += name;
 
-            if (!match(';', c))
+            if (!match(';', c, false))
                 goto error;
             ref += c;
 
@@ -668,28 +1177,38 @@ namespace xml {
         error:
             ref.clear();
             pop();
+
+            if (saveError)
+                set_error(
+                    parsing_exception::create_parsing_exception(
+                        "Expected valid XML entity reference (at line %d col %d)",
+                        get_current_line(),
+                        get_current_col()
+                    )
+                );
+
             return false;
         }
 
-        bool read_char_reference(string_t& ref)
+        bool read_char_reference(string_t& ref, bool saveError = true)
         {
             char_t c;
             string_t str;
             ref.clear();
             push();
 
-            if (!match({'&', '#'}, str))
+            if (!match({'&', '#'}, str, false))
                 goto hexa_reference;
             ref += str;
 
-            if (!read_digit(c))
+            if (!read_digit(c, false))
                 goto hexa_reference;
             ref += c;
 
-            while(read_digit(c))
+            while(read_digit(c, false))
                 ref += c;
 
-            if (!match(';', c))
+            if (!match(';', c, false))
                 goto hexa_reference;
             ref += c;
 
@@ -701,18 +1220,18 @@ namespace xml {
             ref.clear();
             push();
 
-            if (!match({'&', '#', 'x'}, str))
+            if (!match({'&', '#', 'x'}, str, false))
                 goto error;
             ref += str;
 
-            if (!read_hexa_char(c))
+            if (!read_hexa_char(c, false))
                 goto error;
             ref += c;
 
-            while(read_hexa_char(c))
+            while(read_hexa_char(c, false))
                 ref += c;
 
-            if (!match(';', c))
+            if (!match(';', c, false))
                 goto error;
             ref += c;
 
@@ -722,25 +1241,35 @@ namespace xml {
         error:
             ref.clear();
             pop();
+
+            if (saveError)
+                set_error(
+                    parsing_exception::create_parsing_exception(
+                        "Expected valid XML char reference (at line %d col %d)",
+                        get_current_line(),
+                        get_current_col()
+                    )
+                );
+
             return false;
         }
 
-        bool read_parameter_entity_reference(string_t& ref)
+        bool read_parameter_entity_reference(string_t& ref, bool saveError = true)
         {
             char_t c;
             string_t name;
             ref.clear();
             push();
 
-            if (!match('%', c))
+            if (!match('%', c, false))
                 goto error;
             ref += c;
 
-            if (!read_name(name))
+            if (!read_name(name, false))
                 goto error;
             ref += name;
 
-            if (!match(';', c))
+            if (!match(';', c, false))
                 goto error;
             ref += c;
 
@@ -750,21 +1279,31 @@ namespace xml {
         error:
             ref.clear();
             pop();
+
+            if (saveError)
+                set_error(
+                    parsing_exception::create_parsing_exception(
+                        "Expected valid XML entity reference (at line %d col %d)",
+                        get_current_line(),
+                        get_current_col()
+                    )
+                );
+
             return false;
         }
 
-        bool read_entity_value(const char_t quote, string_t& entity)
+        bool read_entity_value(const char_t quote, string_t& entity, bool saveError = true)
         {
             char_t c;
             string_t ref;
             entity.clear();
 
             while (true) {
-                if (match_not_in({'%', '&', quote}, c))
+                if (match_not_in({'%', '&', quote}, c, false))
                     entity += c;
-                else if (read_parameter_entity_reference(ref))
+                else if (read_parameter_entity_reference(ref, false))
                     entity += ref;
-                else if (read_reference(ref))
+                else if (read_reference(ref, false))
                     entity += ref;
                 else
                     break;
@@ -773,16 +1312,16 @@ namespace xml {
             return true;
         }
 
-        bool read_attribute_value(const char_t quote, string_t& attribute)
+        bool read_attribute_value(const char_t quote, string_t& attribute, bool saveError = true)
         {
             char_t c;
             string_t ref;
             attribute.clear();
 
             while (true) {
-                if (match_not_in({'<', '&', quote}, c))
+                if (match_not_in({'<', '&', quote}, c, false))
                     attribute += c;
-                else if (read_reference(ref))
+                else if (read_reference(ref, false))
                     attribute += ref;
                 else
                     break;
@@ -791,71 +1330,63 @@ namespace xml {
             return true;
         }
 
-        bool read_system_literal(const char_t quote, string_t& id)
+        bool read_system_literal(const char_t quote, string_t& id, bool saveError = true)
         {
             id.clear();
 
-            while (match_not(quote))
+            while (match_not(quote, false))
                 id += read();
 
             return true;
         }
 
-        bool read_public_id_literal(const char_t quote, string_t& id)
+        bool read_public_id_literal(const char_t quote, string_t& id, bool saveError = true)
         {
             char_t c;
             id.clear();
 
-            while (match_not(quote) && read_public_id_char(c))
+            while (match_not(quote, false) && read_public_id_char(c, false))
                 id += c;
 
             return true;
         }
 
-        template <typename funcT>
-        bool read_quoted_value(funcT func, string_t& value)
+        template <typename funcT, typename ... retT>
+        bool read_quoted_value(bool saveError, funcT func, retT& ... values)
         {
             char_t quote;
-            value.clear();
             push();
 
-            if(!read_quote(quote))
+            if(!read_quote(quote, saveError))
                 goto error;
 
-            if(!(*this.*func)(quote, value))
+            if(!(*this.*func)(quote, values ..., saveError))
                 goto error;
 
-            if(!match(quote, quote))
+            if(!match(quote, quote, saveError))
                 goto error;
 
             drop();
             return true;
 
         error:
-            value.clear();
             pop();
             return false;
         }
 
-        template <typename funcT1, typename funcT2>
-        bool read_name_and_quoted_value(funcT1 func1, string_t& name, funcT2 func2, string_t& value)
+        template <typename funcT1, typename funcT2, typename ... retT>
+        bool read_name_and_quoted_value(bool saveError, funcT1 func1, string_t& name, funcT2 func2, retT& ... values)
         {
             char_t c;
-            name.clear();
-            value.clear();
             push();
 
-            if(!(*this.*func1)(name))
+            if(!(*this.*func1)(name, saveError))
                 goto error;
 
-           read_spaces();
-
-            if(!match('=', c))
+            if (!read_eq(saveError))
                 goto error;
 
-           read_spaces();
-
-            if(!read_quoted_value(func2, value))
+            if(!read_quoted_value<funcT2, retT ...>(saveError, func2, values ...))
                 goto error;
 
             drop();
@@ -863,7 +1394,6 @@ namespace xml {
 
         error:
             name.clear();
-            value.clear();
             pop();
             return false;
         }
