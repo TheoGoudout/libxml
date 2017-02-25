@@ -67,37 +67,12 @@ namespace xml {
             mValue(std::move(rhs.mValue))
         {}
 
-        //! \brief Parsing constructor.
-        /*!
-         *  This constructor parses the internals of an attribute_t.
-         *
-         *  \param [in] input The input stream parser used to get attribute internals.
-         */
-        basic_attribute(readable_t& input)
-        {
-            if (!parse(input))
-                throw -1; // TODO : throw parsing exception
-        }
-
         //! \brief Destructor.
         /*!
          *  This destructor does nothing.
          */
         virtual ~basic_attribute()
         {}
-
-        //! \brief Parse attribute internals.
-        /*!
-         *  This function parses the internals of an attribute_t.
-         *
-         *  \param [in] input The input stream parser used to get attribute internals.
-         */
-        bool parse(readable_t& input)
-        {
-            return input.read_name_and_quoted_value(
-                &readable_t::read_name,            mName,
-                &readable_t::read_attribute_value, mValue);
-        }
 
 
         //! \brief Get the name of an attribute.
@@ -108,18 +83,6 @@ namespace xml {
          *  \return A constant reference to the name of the \c basic_attribute.
          */
         const string_t& name() const
-        {
-            return mName;
-        }
-
-        //! \brief Get the name of an attribute.
-        /*!
-         *  This function returns a reference to the name of the
-         *  \c basic_attribute.
-         *
-         *  \return A reference to the name of the \c basic_attribute.
-         */
-        string_t& name()
         {
             return mName;
         }
@@ -136,16 +99,39 @@ namespace xml {
             return mValue;
         }
 
-        //! \brief Get the value of an attribute.
+
+        //! \brief Read an attribute_t from a readable_t
         /*!
-         *  This function returns a reference to the value of the
-         *  \c basic_attribute.
+         *  This function will try to parse an attribute from an input stream.
+         *  In case of error, it might throw an exception.
          *
-         *  \return A reference to the value of the \c basic_attribute.
+         *  \param [in] input The input stream to use to parse the attribute_t.
+         *  \param [in] throwLastError Whether an execption should be thrown in
+         *              case of error.
+         *
+         *  \throws A parsing_exception_t, if throwLastError is true. 
+         *
+         *  \return A newly allocated attribute_t in case of success; a nullptr
+         *          in case of error.
          */
-        string_t& value()
+        static attribute_t* read(readable_t& input, bool throwLastError = false)
         {
-            return mValue;
+            string_t name;
+            string_t value;
+
+            bool ret = input.read_name_and_quoted_value(
+                true,
+                &readable_t::read_name,            name,
+                &readable_t::read_attribute_value, value
+            );
+
+            if (ret)
+                return new basic_attribute(name, value);
+    
+            if (throwLastError)
+                input.throw_last_error();
+
+            return nullptr;
         }
 
     private:
