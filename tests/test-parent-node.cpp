@@ -7,7 +7,7 @@ template <typename charT>
 class test_parent_node : public CppUnit::TestFixture
 {
     CPPUNIT_TEST_SUITE( test_parent_node );
-    CPPUNIT_TEST( test_constructor_default );
+    CPPUNIT_TEST( test_default_constructor );
     CPPUNIT_TEST( test_destructor );
     CPPUNIT_TEST( test_insert_single_element );
     CPPUNIT_TEST( test_insert_fill );
@@ -27,7 +27,7 @@ public:
     typedef parent_node_stub<charT> parent_t;
     typedef child_node_stub<charT>  child_t;
 
-    void test_constructor_default()
+    void test_default_constructor()
     {
         {
             parent_t parent;

@@ -7,33 +7,31 @@ template <typename charT>
 class test_child_node : public CppUnit::TestFixture
 {
     CPPUNIT_TEST_SUITE( test_child_node );
-    CPPUNIT_TEST( test_constructor );
+    CPPUNIT_TEST( test_default_constructor );
+    CPPUNIT_TEST( test_copy_constructor );
     CPPUNIT_TEST_SUITE_END();
 
 public:
     typedef parent_node_stub<charT> parent_t;
     typedef child_node_stub<charT>  child_t;
 
-    void test_constructor()
+    void test_default_constructor()
     {
-        // Default constructor
-        {
-            child_t child;
+        child_t child;
 
-            CPPUNIT_ASSERT(child.parent()   == nullptr);
-            CPPUNIT_ASSERT(child.previous() == nullptr);
-            CPPUNIT_ASSERT(child.next()     == nullptr);
-        }
+        CPPUNIT_ASSERT(child.parent()   == nullptr);
+        CPPUNIT_ASSERT(child.previous() == nullptr);
+        CPPUNIT_ASSERT(child.next()     == nullptr);
+    }
 
-        // Internal constructor
-        {
-            parent_t parent;
-            child_t child(&parent);
+    void test_copy_constructor()
+    {
+        parent_t parent;
+        child_t child(&parent);
 
-            CPPUNIT_ASSERT(child.parent()   == &parent);
-            CPPUNIT_ASSERT(child.previous() == nullptr);
-            CPPUNIT_ASSERT(child.next()     == nullptr);
-        }
+        CPPUNIT_ASSERT(child.parent()   == &parent);
+        CPPUNIT_ASSERT(child.previous() == nullptr);
+        CPPUNIT_ASSERT(child.next()     == nullptr);
     }
 };
 
