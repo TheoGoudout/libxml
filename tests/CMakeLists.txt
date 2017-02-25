@@ -21,8 +21,13 @@ if(CPPUNIT_FOUND)
 
     # Set the list of unit tests
     set(TEST_SOURCE_FILES
+        ${CMAKE_CURRENT_SOURCE_DIR}/test-attribute.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/test-child-node.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/test-encoding.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/test-exception.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/test-parent-node.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/test-standalone.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/test-version.cpp
     )
 
     # Enable unit tests

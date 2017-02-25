@@ -9,30 +9,38 @@ project(libxml VERSION 0.1 LANGUAGES CXX)
 
 # Set source files of the project
 set(XML_SOURCE_FILES
-    src/readable.cpp
-    src/writeable.cpp
-    src/parent-node.cpp
+    src/attribute.cpp
     src/child-node.cpp
-    src/node.cpp
     src/document.cpp
     src/element.cpp
-    src/attribute.cpp
+    src/encoding.cpp
+    src/node.cpp
+    src/parent-node.cpp
+    src/readable.cpp
+    src/standalone.cpp
     src/text.cpp
+    src/version.cpp
+    src/writeable.cpp
 )
 
 # Set header files of the project
 set(XML_HEADER_FILES
-    include/readable.h
-    include/writeable.h
-    include/node-interface.h
-    include/parent-node.h
+    include/attribute.h
     include/child-node.h
-    include/node.h
-    include/iterator.h
+    include/convert.h
     include/document.h
     include/element.h
-    include/attribute.h
+    include/exception.h
+    include/iterator.h
+    include/node-interface.h
+    include/node.h
+    include/parent-node.h
+    include/readable.h
+    include/standalone.h
+    include/strings.h
     include/text.h
+    include/version.h
+    include/writeable.h
 )
 
 
@@ -51,7 +59,7 @@ if(BUILD_SHARED_LIBRARY)
     add_library(xml SHARED ${XML_SOURCE_FILES})
 
     # Set C++11 flag
-    target_compile_features(xml PRIVATE cxx_variadic_templates)
+    target_compile_features(xml PRIVATE cxx_variable_templates)
 
     # Set targets properties
     set_target_properties(xml PROPERTIES
@@ -73,7 +81,7 @@ if(BUILD_STATIC_LIBRARY)
     add_library(xml_static STATIC ${XML_SOURCE_FILES})
 
     # Set C++11 flag
-    target_compile_features(xml_static PRIVATE cxx_variadic_templates)
+    target_compile_features(xml_static PRIVATE cxx_variable_templates)
 
     # Set targets properties
     set_target_properties(xml_static PROPERTIES
